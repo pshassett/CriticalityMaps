@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from distutils.core import Extension
 
-DISTNAME = 'WNTRCriticalityMaps'
+DISTNAME = 'criticalityMaps'
 VERSION = '0.0.1'
 PACKAGES = find_packages()
 EXTENSIONS = []

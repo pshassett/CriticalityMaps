@@ -49,13 +49,20 @@ class wn_dataframe(object):
         self.node_data = node_coordinates.join(pd.DataFrame(node_data))
         self.link_data = link_coordinates.join(pd.DataFrame(link_data))
 
-    def make_map(self, map_columns=[], tooltip_columns=[],
-                 geojson_layers={}):
+    def make_map(self, center, output_file=None, map_columns=[],
+                 tooltip_columns=[], geojson_layers={}):
         """
         Make a .html web map of the wn and any data contained in the wn_dataframe
 
         Parameters
         ----------
+
+        center: list of floats
+            [lat, long] for the center point of the map.
+
+        output_file: str/path-like
+            path and .html file name for map output.
+            Defaults to the name of the wn .inp file in the working directory.
 
         map_columns: list, optional
             list of column names in the wn_dataframe to be added as map layers
@@ -85,7 +92,8 @@ class wn_dataframe(object):
 
         """
         # Define the output file.
-        output_file = './' + os.path.basename(self._wn.name).split('.inp')[0] + '_map.html'
+        if output_file is None:
+            output_file = './' + os.path.basename(self._wn.name).split('.inp')[0] + '_map.html'
         # Sort map_columns into seperate node and link dicts with quartiles
         node_map_fields = {}
         link_map_fields = {}
@@ -135,6 +143,7 @@ already exist in the wn_dataframe.')
         with open(output_file, 'w') as fp:
             fp.write(j2_env.get_template(
                     './templates/dataframe_map_template.html').render(
+                    center=center,
                     node_data=self.node_data,
                     node_map_fields=node_map_fields,
                     node_tooltip_fields=node_tooltip_fields,
