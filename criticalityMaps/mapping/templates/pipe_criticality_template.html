@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <script>L_PREFER_CANVAS=false; L_NO_TOUCH=false; L_DISABLE_3D=false;</script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.5.0/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-search@2.9.8/src/leaflet-search.js" integrity="sha256-qGIpIMlQBXdYwk0c6btx1RD6z3EJX5Y685QoJrMS2sE=" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.5.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@2.9.8/src/leaflet-search.css" integrity="sha256-shglAIJTG86aSEHQg3eLxymTGG0nMyMRXBwGplGN1jU=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://rawcdn.githack.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css"/>
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>    
+    <style>#map {
+        position: relative;
+        width: 100.0%;
+        height: 100.0%;
+        left: 0.0%;
+        top: 0.0%;
+        }
+    </style>    
+</head>
+
+<body>
+    <div class="leaflet-map" id="map" >
+        <svg>
+            <defs>
+                <rect id="myRect" width= 400 height=10 />
+                <linearGradient id="myGradient">
+                  <stop offset="5%" stop-color="blue" />
+                  <stop offset="5%" stop-color="green" />
+                  <stop offset="25%" stop-color="green" />
+                  <stop offset="25%" stop-color="yellow" />
+                  <stop offset="50%" stop-color="yellow" />
+                  <stop offset="50%" stop-color="red" />
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+</body>
+
+<script>    
+
+    var bounds = null;
+
+    var map = L.map(
+        'map', {
+        center: {{latlong}},
+        zoom: 12,
+        maxBounds: bounds,
+        layers: [],
+        worldCopyJump: false,
+        crs: L.CRS.EPSG3857,
+        zoomControl: true,
+        });
+
+    var tile_layer = L.tileLayer(
+        'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg',
+        {
+        "attribution": null,
+        "detectRetina": false,
+        "maxNativeZoom": 18,
+        "maxZoom": 18,
+        "minZoom": 0,
+        "noWrap": false,
+        "opacity": 1,
+        "subdomains": "abc",
+        "tms": false
+        }
+    ).addTo(map);
+    
+    var impact_layers = L.layerGroup().addTo(map);
+        
+    map.on('baselayerchange', function(e){
+        impact_layers.clearLayers()
+    });
+
+    map.on('keydown', function(e){
+        //alert(Object.entries(e.sourceTarget))
+        var event = e.originalEvent
+        if(event.key === 'Escape') {
+            //alert(event.key)
+            impact_layers.clearLayers()
+        }
+    });
+        
+    var nodeMarkerOptions = {
+    radius: 3,
+    fillColor: "#ff7800",
+    color: "#000",
+    weight: 1.5,
+    opacity: 1,
+    fillOpacity: 0.8
+    };
+    
+    var linkStyle = {
+    'bubblingMouseEvents': true,
+    'fillOpacity': 0.8,
+    'weight': 2,
+    'color': 'black',
+    'fillColor': 'black'
+    };          
+    
+    var criticalityMarkerOptions = {
+        bubblingMouseEvents: true,
+        radius: 8,
+        fillColor: "red",
+        color: "black",
+        weight: 3,
+        opacity: .8,
+        fillOpacity: 0.8
+        };
+    
+    function tooltipBuilder(layer){
+        // Convert non-primitive to String.
+        let handleObject = (feature)=>typeof(feature)=='object' ? JSON.stringify(feature) : feature;
+        var fields = this.options.tooltipFields;
+        
+        return '<table>' +
+        String(
+            fields.map(
+            columnname=>
+                `<tr style="text-align: left;">
+                <th style="padding: 4px; padding-right: 10px;">
+                ${ columnname}
+                </th>
+
+                <td style="padding: 4px;">${handleObject(layer.feature.properties[columnname])
+                }</td></tr>`
+            ).join(''))
+            +'</table>'
+    }
+        
+    function wnTooltipBuilder(layer){
+        var fields = ["ID"];
+        if(layer.feature.geometry.type === 'LineString'){
+            fields.push('Pipe Diameter (in)')
+        }else if (layer.feature.geometry.type === 'Point'){
+            fields.push('Base Demand (gpm)')
+        }
+        try {
+        tooltip = '<table>' +
+                    String(
+                        fields.map(
+                        columnname=>
+                            `<tr style="text-align: left;">
+                            <th style="padding: 4px; padding-right: 10px;">
+                            ${ columnname}
+                            </th>
+
+                            <td style="padding: 4px;">${layer.feature.properties[columnname]
+                            }</td></tr>`
+                        ).join(''))
+                        +'</table>'
+        }catch(e){
+            alert(e.message)
+        }
+        return tooltip
+    }
+    
+    function colorMapCriticality(popImpacted){
+            var color = null;
+            var radius = 5;
+            var fillOpacity = 1;
+            if (typeof(popImpacted) !== 'string'){
+                if(popImpacted < 500) {
+                    color = 'blue';
+                    fillOpacity = 0.5;
+                    radius = 2;
+                }
+                else if(popImpacted < 2500){
+                    color = 'green';
+                }
+                else if(popImpacted < 5000){
+                    color = 'yellow';
+                }
+                else if(popImpacted > 5000){
+                    color = 'red';
+                }
+            }
+            else if(popImpacted === 'SIMULATION FAILED'){
+                radius = 0
+            }
+            else if(popImpacted === 'NO EFFECTED NODES'){
+                radius = 0
+            }
+            var style = {
+                bubblingMouseEvents: true,
+                radius: radius,
+                color: color,
+                weight: 4,
+                opacity: 1,
+                fillOpacity: fillOpacity
+            };
+            return style;
+        }
+        
+    function clickFunction(e) {
+        impact_layers.clearLayers()
+        var impact = e.target.feature.properties.impact;
+        if(typeof(impact) === 'string'){
+            if(impact === 'ALL NODES'){
+                var nodes_impacted_layer = L.geoJson(wn,{
+                    pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng, criticalityMarkerOptions);
+                    },
+                    filter: function(feature){
+                        properties = feature.properties;
+                        if(properties.hasOwnProperty("Base Demand (gpm)") &&
+                           feature.geometry.type === "Point") return true;
+                    }
+                }).addTo(impact_layers);
+
+                nodes_impacted_layer.bindTooltip(tooltipBuilder, {
+                    tooltipFields: ['ID', 'Base Demand (gpm)'],
+                    "sticky": true});
+            }
+            else{
+               alert(impact)
+            }
+        }
+        else if(typeof(impact) === 'object'){
+            try {
+                var nodes_impacted = []
+                for(var key in impact){
+                    if(impact.hasOwnProperty(key)){
+                        nodes_impacted.push(key)
+                    }
+                }
+                var nodes_impacted_layer = L.geoJson(wn,{
+                    pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng, criticalityMarkerOptions);
+                    },
+                    filter: function(feature) {
+                        if(nodes_impacted.includes(String(feature.id))&&
+                           feature.geometry.type === "Point") return true;
+                    }
+                }).addTo(impact_layers);
+
+                nodes_impacted_layer.bindTooltip(tooltipBuilder, {
+                    tooltipFields: ['ID', 'Base Demand (gpm)'],
+                    "sticky": true});
+            } catch (e) {
+                alert(e.message)
+            }
+        }
+    }
+            
+    function onEachFeature(feature, layer) {
+        layer.on({
+            'click': clickFunction
+        });
+    }
+    
+    var wn = {{wn_geojson}}
+    var wnGeojsonLayer = L.geoJson(wn, {
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, nodeMarkerOptions) 
+        },
+        style: function(feature){
+            return nodeMarkerOptions;
+        }
+    }).bindTooltip(wnTooltipBuilder, {"sticky": true});
+    wnGeojsonLayer.addTo(map);
+        
+    var dataLayers = {}
+    {% for id, layer in data_layers_geojson.items() %}
+        var {{id.replace(" ","")}} = L.geoJson({{layer}},
+            {
+             style: function(feature){
+             return colorMapCriticality(feature.properties['Population Impacted']);
+             },
+             onEachFeature: onEachFeature,
+             filter: function(feature) {
+                         if(feature.geometry.type === "LineString") return true;
+             }
+            }
+        ).addTo(map);
+        {{id.replace(" ","")}}.bindTooltip(tooltipBuilder, {
+            tooltipFields: ['ID', 'Pipe Diameter (in)', 'Nodes Impacted', 'Population Impacted'],
+            "sticky": true
+        });
+        dataLayers["{{id}}"] = {{id.replace(" ","")}}
+        {{id.replace(" ","")}}.remove()
+    {% endfor %}
+         
+         
+    L.control.search({
+        layer: wnGeojsonLayer,
+        initial: true,
+        propertyName: 'ID',
+        moveToLocation: function(latlng, title, map) {
+            var zoom = 16;
+            map.setView(latlng, zoom); // access the zoom
+        },
+        hideMarkerOnCollapse: true
+    }).addTo(map);
+     
+     
+    L.control.layers(
+        dataLayers,
+        null,
+        {position: 'bottomleft',
+         collapsed: false,
+         autoZIndex: true
+        }
+    ).addTo(map);
+    
+       
+    colorMap = {}
+
+    colorMap.x = d3.scale.linear()
+        .domain([0.0, 10000.0])
+        .range([0, 400]);
+
+    colorMap.legend = L.control({position: 'topright'});
+    colorMap.legend.onAdd = function (map) {var div = L.DomUtil.create('div', 'legend'); return div};
+    colorMap.legend.addTo(map);
+
+    colorMap.xAxis = d3.svg.axis()
+        .scale(colorMap.x)
+        .orient("top")
+        .tickSize(1)
+        .tickValues([0, 500, 2500, 5000, 10000]);
+
+    colorMap.svg = d3.select(".legend.leaflet-control").append("svg")
+        .attr("id", 'legend')
+        .attr("width", 450)
+        .attr("height", 40);
+     
+     colorMap.use = colorMap.svg.append("use")
+        .attr("x", 25)
+        .attr("y", 16)
+        .attr("xlink:href", "#myRect")
+        .attr("fill", "url('#myGradient')");
+     
+     colorMap.g = colorMap.svg.append("g")
+        .attr("class", "key")
+        .attr("transform", "translate(25,17)");
+     
+    colorMap.g.call(colorMap.xAxis).append("text")
+        .attr("class", "caption")
+        .attr("y", 21)
+        .style("font", "14px arial")
+        .text("Population Impacted By Pressure Below 20 psi");
+     
+    L.control.scale({position:'topright'}).addTo(map);
+
+</script>

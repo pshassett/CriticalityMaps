@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<head>    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <script>L_PREFER_CANVAS=false; L_NO_TOUCH=false; L_DISABLE_3D=false;</script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.5.0/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-search@2.9.8/src/leaflet-search.js" integrity="sha256-qGIpIMlQBXdYwk0c6btx1RD6z3EJX5Y685QoJrMS2sE=" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.5.0/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-search@2.9.8/src/leaflet-search.css" integrity="sha256-shglAIJTG86aSEHQg3eLxymTGG0nMyMRXBwGplGN1jU=" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://rawcdn.githack.com/python-visualization/folium/master/folium/templates/leaflet.awesome.rotate.css"/>
+    <style>html, body {width: 100%;height: 100%;margin: 0;padding: 0;}</style>
+    <style>#map {position:absolute;top:0;bottom:0;right:0;left:0;}</style>    
+    <style>#map {
+        position: relative;
+        width: 100.0%;
+        height: 100.0%;
+        left: 0.0%;
+        top: 0.0%;
+        }
+    </style>    
+</head>
+
+<body>
+    <div class="leaflet-map" id="map" >
+        <svg>
+            <defs>
+                <rect id="myRect" width= 400 height=10 />
+                <linearGradient id="myGradient">
+                  <stop offset="25%" stop-color="blue" />
+                  <stop offset="25%" stop-color="green" />
+                  <stop offset="50%" stop-color="green" />
+                  <stop offset="50%" stop-color="yellow" />
+                  <stop offset="75%" stop-color="yellow" />
+                  <stop offset="75%" stop-color="red" />
+                </linearGradient>
+            </defs>
+        </svg>
+    </div>
+</body>
+
+<script>    
+    var bounds = null;
+    var map = L.map(
+        'map', {
+        center: [40, -100],
+        zoom: 12,
+        maxBounds: bounds,
+        layers: [],
+        worldCopyJump: false,
+        crs: L.CRS.EPSG3857,
+        zoomControl: true,
+        });
+
+    var tile_layer = L.tileLayer(
+        'https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.jpg',
+        {
+        "attribution": null,
+        "detectRetina": false,
+        "maxNativeZoom": 18,
+        "maxZoom": 18,
+        "minZoom": 0,
+        "noWrap": false,
+        "opacity": 1,
+        "subdomains": "abc",
+        "tms": false
+        }
+    ).addTo(map);
+    
+    map.on('baselayerchange', function(e){
+        //console.log(e)
+        var layer = e.name;
+        var quartiles = {}
+        var node_fields = Object.keys(nodeMapFields);
+        var link_fields = Object.keys(linkMapFields);
+        
+        if (node_fields.includes(layer)){
+            quartiles = nodeMapFields[layer];
+        }
+        else if (link_fields.includes(layer)){
+            quartiles = linkMapFields[layer];
+        }
+        //console.log(e)
+        //console.log(layer)
+        //console.log(quartiles)
+        makeColorLegend(layer, quartiles)
+    });
+
+    var mapLayerGroup = L.layerGroup().addTo(map);
+    
+    map.on('keydown', function(e){
+        var event = e.originalEvent
+        if(event.key === 'Escape') {
+            mapLayerGroup.clearLayers()
+        }
+    });
+        
+    var nodeMarkerOptions = {
+    radius: 3,
+    fillColor: "#ff7800",
+    color: "#000",
+    weight: 1.5,
+    opacity: 1,
+    fillOpacity: 0.8
+    };
+    
+    var linkStyle = {
+    'bubblingMouseEvents': true,
+    'fillOpacity': 0.8,
+    'weight': 3,
+    'color': 'black',
+    'fillColor': 'black'
+    };          
+     
+    function makeNodeLayer(node_data, node_fields){
+        var nodes = {'type': 'FeatureCollection',
+                        'features': []};
+        // Add node elements to geojson layer.
+        for(let [key, value] of Object.entries(node_data.coordinates)){
+            feature = {'type': 'Feature',
+                       'geometry': {'type': 'Point',
+                                    'coordinates': value},
+                       'id': key,
+                       'properties': {'ID': key}
+                      };
+            // Add the set of tooltip fields and map fields to the layer properties.
+            for (index=0; index<node_fields.length; index++){
+                field = node_fields[index]
+                feature.properties[field] = node_data[String(field)][key]
+            }
+            nodes.features.push(feature);
+        }
+        return nodes
+    }
+    
+    function makeLinkLayer(link_data, link_fields){
+        var links = {'type': 'FeatureCollection',
+                        'features': []};
+        // Add link elements to the network layer.
+        for(let [key, value] of Object.entries(link_data.coordinates)){
+            feature = {'type': 'Feature',
+                       'geometry': {'type': 'LineString',
+                                    'coordinates': value},
+                       'id': key,
+                       'properties': {'ID': key}
+                      };
+            // Add any tooltip or map fields to the layer
+            for (index=0; index<link_fields.length; index++){
+                field = link_fields[index]
+                feature.properties[field] = link_data[field][key]
+            }
+            links.features.push(feature);
+        }
+        return links
+    }
+       
+    function tooltipBuilder(layer){
+        // Convert non-primitive to String.
+        let handleObject = (feature)=>typeof(feature)=='object' ? JSON.stringify(feature) : feature;
+        var fields = this.options.tooltipFields;
+        return '<table>' +
+        String(
+            fields.map(
+            columnname=>
+                `<tr style="text-align: left;">
+                <th style="padding: 4px; padding-right: 10px;">
+                ${ columnname}
+                </th>
+
+                <td style="padding: 4px;">${handleObject(layer.feature.properties[columnname])
+                }</td></tr>`
+            ).join(''))
+            +'</table>'
+    }
+        
+    function makeColorMap(value, quartiles){
+        var color = null;
+        var radius = 5;
+        var fillOpacity = 1;
+        //var quantValues = Object.values(quartiles);
+        if(value < quartiles['0.25']) {
+            color = 'blue';
+            fillOpacity = 1;
+            radius = 5;
+        }
+        else if(value < quartiles['0.5']){
+            color = 'green';
+        }
+        else if(value < quartiles['0.75']){
+            color = 'yellow';
+        }
+        else if(value > quartiles['0.75']){
+            color = 'red';
+        }
+        var style = {
+        bubblingMouseEvents: true,
+        radius: radius,
+        color: color,
+        weight: 2,
+        opacity: 1,
+        fillOpacity: fillOpacity
+        };
+
+        return style;
+    }
+        
+    function makeColorLegend(layer, quartilesObj){
+        //console.log(quartilesObj)
+        colorMap = {}
+        colorMap.x = d3.scale.linear()
+            .domain([quartilesObj[0], quartilesObj[1]])
+            //.range([quartilesObj[0], quartilesObj[1]]);
+            .range([0, 400]);
+
+        d3.select(".legend.leaflet-control").remove();
+        colorMap.legend = L.control({position: 'topright'});
+        colorMap.legend.onAdd = function (map) {var div = L.DomUtil.create('div', 'legend'); return div};
+        colorMap.legend.addTo(map);
+
+        
+        colorMap.xAxis = d3.svg.axis()
+            .scale(colorMap.x)
+            .orient("top")
+            .tickSize(1)
+            .tickValues(Object.values(quartilesObj).sort(function(a, b) {return a - b;}));
+        colorMap.svg = d3.select(".legend.leaflet-control").append("svg")
+            .attr("id", 'legend')
+            .attr("width", 450)
+            .attr("height", 40);
+
+         colorMap.use = colorMap.svg.append("use")
+            .attr("x", 25)
+            .attr("y", 16)
+            .attr("xlink:href", "#myRect")
+            .attr("fill", "url('#myGradient')");
+
+         colorMap.g = colorMap.svg.append("g")
+            .attr("class", "key")
+            .attr("transform", "translate(25,17)");
+
+        colorMap.g.call(colorMap.xAxis).append("text")
+            .attr("class", "caption")
+            .attr("y", 21)
+            .style("font", "14px arial")
+            .text(layer);
+
+    }    
+    
+    // pass in arguments from python
+    // node data
+    var nodeData = {{node_data.to_json()}};
+    var nodeMapFields = {{node_map_fields}};
+    var nodeTooltipFields = {{node_tooltip_fields}}
+    var nodeFieldSet = {{node_field_set}}
+    // link data
+    var linkData = {{link_data.to_json()}};
+    var linkMapFields = {{link_map_fields}};
+    var linkTooltipFields = {{link_tooltip_fields}};
+    var linkFieldSet = {{link_field_set}}
+    
+    
+    // additional geojson layers
+    var geojsonLayers = {{geojson_layers}}
+    //console.log(nodeData)
+    //console.log(node_fields)
+    //console.log(link_fields)
+    // Build the Base Layer.
+    var nodeGeoJSON = makeNodeLayer(nodeData, nodeFieldSet);  
+    baseNodeTooltipFields = nodeTooltipFields;
+    baseNodeTooltipFields.unshift('ID');
+    // console.log(node_fields)
+    var nodeLayer = L.geoJSON(nodeGeoJSON, {
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, nodeMarkerOptions) 
+        }
+    }).bindTooltip(tooltipBuilder,{
+                    tooltipFields: baseNodeTooltipFields,
+                    "sticky": true}
+                 );
+    nodeLayer.bindPopup(tooltipBuilder,{
+                    tooltipFields: baseNodeTooltipFields
+        });
+    nodeLayer.addTo(map);
+        
+    var linkGeoJSON = makeLinkLayer(linkData, linkFieldSet);
+    baseLinkTooltipFields = linkTooltipFields;
+    baseLinkTooltipFields.unshift('ID');
+    var linkLayer = L.geoJSON(linkGeoJSON, {
+        style: linkStyle
+    }).bindTooltip(tooltipBuilder,{
+                    tooltipFields: baseLinkTooltipFields,
+                    "sticky": true}
+                 );
+    linkLayer.bindPopup(tooltipBuilder,{
+                    tooltipFields: baseLinkTooltipFields
+    });
+    linkLayer.addTo(map);
+    
+    //console.log(nodeGeoJSON)
+    //console.log(linkGeoJSON)
+    
+    // Add node map layers.
+    
+    var mapLayers = {};
+    {% for layer, quartiles in node_map_fields.items() %}
+        var {{[layer.replace(" ",""), "Tooltips"]|join}} = {{node_tooltip_fields}};
+        var {{layer.replace(" ","")}} = L.geoJson(nodeGeoJSON,{
+                    pointToLayer: function (feature, latlng) {
+                    return L.circleMarker(latlng,
+                        makeColorMap(feature.properties["{{layer}}"], {{quartiles}}));
+                    },
+                    filter: function(feature) {
+                        if(feature.properties["{{layer}}"] != null &&
+                           feature.geometry.type === "Point") return true;
+                    },
+                });
+                   
+        if({{[layer.replace(" ",""), "Tooltips"]|join}}.includes("{{layer}}")){
+            {{[layer.replace(" ",""), "Tooltips"]|join}}.unshift("ID")
+           }
+        else{
+            {{[layer.replace(" ",""), "Tooltips"]|join}}.unshift("ID", "{{layer}}")
+            
+        }
+        // Add tooltips and popups
+        {{layer.replace(" ","")}}.bindTooltip(tooltipBuilder,{
+                    tooltipFields: {{[layer.replace(" ",""), "Tooltips"]|join}},
+                    "sticky": true
+        });
+        {{layer.replace(" ","")}}.bindPopup(tooltipBuilder,{
+                    tooltipFields: {{[layer.replace(" ",""), "Tooltips"]|join}}
+        });
+        // Add the layer to the map
+        {{layer.replace(" ","")}}.addTo(map);
+        mapLayerGroup.addLayer({{layer.replace(" ","")}})
+        mapLayers["{{layer}}"] = {{layer.replace(" ","")}}
+        // Remove the overlay when first opening the map.
+        {{layer.replace(" ","")}}.remove();
+    {% endfor %}
+    
+    // Add link map layers
+    
+    {% for layer, quartiles in link_map_fields.items() %}
+        var {{[layer.replace(" ",""), "Tooltips"]|join}} = {{link_tooltip_fields}};
+        var {{layer.replace(" ","")}} = L.geoJson(linkGeoJSON,{
+                    style: function(feature){
+                        return makeColorMap(feature.properties["{{layer}}"], {{quartiles}});
+                    },
+                    filter: function(feature) {
+                        if(feature.properties["{{layer}}"] != null &&
+                           feature.geometry.type === "LineString") return true;
+                    },
+                });
+                   
+        if({{[layer.replace(" ",""), "Tooltips"]|join}}.includes("{{layer}}")){
+            {{[layer.replace(" ",""), "Tooltips"]|join}}.unshift("ID")
+           }
+        else{
+            {{[layer.replace(" ",""), "Tooltips"]|join}}.unshift("ID", "{{layer}}")
+            
+        }
+        // Add tooltips and popups
+        {{layer.replace(" ","")}}.bindTooltip(tooltipBuilder,{
+                    tooltipFields: {{[layer.replace(" ",""), "Tooltips"]|join}},
+                    "sticky": true
+        });
+        {{layer.replace(" ","")}}.bindPopup(tooltipBuilder,{
+                    tooltipFields: {{[layer.replace(" ",""), "Tooltips"]|join}}
+        });
+        // Add the layer to the map
+        {{layer.replace(" ","")}}.addTo(map);
+        mapLayerGroup.addLayer({{layer.replace(" ","")}})
+        mapLayers["{{layer}}"] = {{layer.replace(" ","")}}
+        // Remove the overlay when first opening the map.
+        {{layer.replace(" ","")}}.remove();
+    {% endfor %}
+    
+    // Add Search bar for network components.
+    var networkLayers = L.layerGroup([nodeLayer, linkLayer]).addTo(map);
+    L.control.search({
+        layer: networkLayers,
+        initial: true,
+        propertyName: 'ID',
+        moveToLocation: function(latlng, title, map) {
+            var zoom = 15;
+            map.setView(latlng, zoom); // access the zoom
+        },
+        hideMarkerOnCollapse: true,
+        textPlaceholder: 'Search by ID...'
+    }).addTo(map);
+     
+     
+    L.control.layers(
+        mapLayers,
+        null,
+        {position: 'bottomleft',
+         collapsed: false,
+         autoZIndex: true
+        }
+    ).addTo(map);
+    
+    L.control.scale({position:'topright'}).addTo(map);
+</script>
