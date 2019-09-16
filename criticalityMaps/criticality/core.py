@@ -155,7 +155,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
         results = runner(args, num_processors)
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(results), fp, default_flow_style=False)
-        print('runtime =', time.time() - start)
+        print('fire criticality runtime =', time.time() - start)
     else:
         # Define arguments for fire analysis.
         result = []
@@ -167,7 +167,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
                           )
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(result), fp, default_flow_style=False)
-        print('runtime =', time.time() - start)
+        print('fire criticality runtime =', time.time() - start)
     # Clean up temp files
     os.remove('./_wn.pickle')
     if not save_log:
@@ -304,7 +304,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
         results = runner(args, num_processors)
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(results), fp, default_flow_style=False)
-        print('runtime =', time.time() - start)
+        print('pipe criticality runtime =', time.time() - start)
     else:
         # Define arguments for fire analysis.
         result = []
@@ -316,7 +316,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
                           )
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(result), fp, default_flow_style=False)
-        print('runtime =', time.time() - start)
+        print('pipe criticality runtime =', time.time() - start)
     # Clean up temp files.
     os.remove('./_wn.pickle')
     if not save_log:

@@ -267,7 +267,8 @@
         style: function(feature){
             return nodeMarkerOptions;
         }
-    }).bindTooltip(wnTooltipBuilder, {"sticky": true});
+    }).bindTooltip(wnTooltipBuilder, {"sticky": true})
+    .bindPopup(wnTooltipBuilder, {"sticky": true});
     wnGeojsonLayer.addTo(map);
         
     var dataLayers = {}
@@ -286,7 +287,9 @@
         {{id.replace(" ","")}}.bindTooltip(tooltipBuilder, {
             tooltipFields: ['ID', 'Pipe Diameter (in)', 'Nodes Impacted', 'Population Impacted'],
             "sticky": true
-        });
+        })
+        .bindPopup(wnTooltipBuilder, {tooltipFields: ['ID', 'Pipe Diameter (in)', 'Nodes Impacted', 'Population Impacted'],
+                                      "sticky": true});
         dataLayers["{{id}}"] = {{id.replace(" ","")}}
         {{id.replace(" ","")}}.remove()
     {% endfor %}
