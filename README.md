@@ -1,6 +1,6 @@
 [![Documentation Status](https://readthedocs.org/projects/criticalitymaps/badge/?version=latest)](https://criticalitymaps.readthedocs.io/en/latest/?badge=latest)
 
-WNTRCriticalityMaps is a WNTR-based utility for running large sets of 
+CriticalityMaps is a WNTR-based utility for running large sets of 
 fire, pipe, or custom criticality simulations and visualizing the results on
 interactive leaflet.js html maps.  
 
