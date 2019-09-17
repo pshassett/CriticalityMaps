@@ -3,26 +3,40 @@ CriticalityMaps
 
 CriticalityMaps is a WNTR-based utility for running large sets of 
 fire, pipe, or custom criticality simulations and visualizing the results on
-interactive leaflet.js html maps.  
+interactive leaflet.js html maps. 
 
-.. figure:: _static/pipe_criticality.png
-    :scale: 66%
-    :alt: Network
+Additionally, CriticalityMaps has 
+mapping utilities that can be used to visualize any other attributes of the
+network on an interactive .html map.
 
-Additionally, the mapping utilities can be used to visualize any other attributes of the network on an interactive .html map. 
+.. raw:: html
+    
+    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; height: auto;">
+        <iframe src="_static/pipe_criticality_summary_map.html" frameborder="0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+    </div>
 
-Funding Disclaimer
-------------------
-The U.S. Environmental Protection Agency (EPA) through its Office of Research and Development funded and collaborated in the research described herein under Interagency Agreement (IA #92432901) with the Department of Energy's Oak Ridge Associated Universities (ORAU).
+Example Fire Criticality interactive map. Click on a highlited pipe to see the impact of its closure.
+Use the search bar to search for networkcomponents by their ID.
+
+Overview
+========
+CriticalityMaps is composed of two main components:
+
+* Criticality Analysis Utilities
+* Mapping Utilities
+
+.. automodule:: criticalityMaps.criticality
+    :members:
+.. automodule:: criticalityMaps.mapping
+    :members:
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   overview
    criticality
    mapping
-
+   apidoc/modules
 
 
 Indices and tables
@@ -31,3 +45,7 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+
+Funding Disclaimer
+------------------
+The U.S. Environmental Protection Agency (EPA) through its Office of Research and Development funded and collaborated in the research described herein under Interagency Agreement (IA #92432901) with the Department of Energy's Oak Ridge Associated Universities (ORAU).
