@@ -227,12 +227,8 @@
                     }
                 }).addTo(impact_layers);
 
-                nodes_impacted_layer.bindTooltip(tooltipBuilder, {
-                    tooltipFields: ['ID', 'Base Demand (gpm)'],
-                    "sticky": true})
-                    .bindPopup(tooltipBuilder, {
-                    tooltipFields: ['ID', 'Base Demand (gpm)'],
-                    "sticky": true});
+                nodes_impacted_layer.bindTooltip(wnTooltipBuilder, {"sticky": true})
+                                    .bindPopup(wnTooltipBuilder);
             } catch (e) {
                 alert(e.message)
             }
@@ -275,8 +271,7 @@
             tooltipFields: ['ID', 'Base Demand (gpm)', 'Nodes Impacted', 'Population Impacted'],
             "sticky": true
         })
-        .bindPopup(tooltipBuilder, {tooltipFields: ['ID', 'Base Demand (gpm)', 'Nodes Impacted', 'Population Impacted'],
-                                      "sticky": true});
+        .bindPopup(tooltipBuilder, {tooltipFields: ['ID', 'Base Demand (gpm)', 'Nodes Impacted', 'Population Impacted']});
         dataLayers["{{id}}"] = {{id.replace(" ","")}}
         {{id.replace(" ","")}}.remove()
     {% endfor %}

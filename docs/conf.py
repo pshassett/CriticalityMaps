@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'WNTRCriticalityMaps'
+project = 'CriticalityMaps'
 copyright = '2019, Patrick Hassett'
 author = 'Patrick Hassett'
 
