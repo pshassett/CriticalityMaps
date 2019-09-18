@@ -1,9 +1,3 @@
-# define a version (required)
-version: 1
-
-# Define what formats (PDF, ePub) of additional output should be produced
-formats:
-        -pdf
 # Python environment configuration
 python:
         setup_py_install: true
