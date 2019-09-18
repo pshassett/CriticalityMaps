@@ -1,4 +1,5 @@
 wntr
+numpy
 utm
 pyyaml
 jinja2
