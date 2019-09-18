@@ -1,0 +1,11 @@
+# define a version (required)
+version: 2
+
+# Build docs with sphinx and point it to the conf.py file/docs dir
+sphinx:
+        configuration: docs/conf.py
+# Define what formats (PDF, ePub) of additional output should be produced
+        formats: all 
+# Python environment configuration
+python:
+        setup_py_install: true
