@@ -1,5 +1,5 @@
 conda:
-    file: documentation/environment.yml
+    file: docs/environment.yml
 # Python environment configuration
 python:
     version: 3.7
