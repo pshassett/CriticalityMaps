@@ -1,6 +1,10 @@
 name: docbuild
+channels:
+        - defaults
+        - conda-forge
 dependencies:
-            - python=3.6
+            - python=3.7
+            - wntr
             - numpy
             - scipy
             - networkx
