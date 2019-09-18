@@ -1,4 +1,4 @@
 wntr
 utm
-PyYaml
-Jinja2
+pyyaml
+jinja2
