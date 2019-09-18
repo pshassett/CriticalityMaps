@@ -3,14 +3,16 @@
 CriticalityMaps
 ---------------
 CriticalityMaps is a [WNTR](https://github.com/USEPA/WNTR)-based utility for running large sets of 
-fire and pipe criticality simulations and visualizing the results on
-interactive leaflet.js html maps.  
+fire and pipe criticality simulations and visualizing the results on interactive leaflet.js html 
+maps. Additionally, the mapping utilities can be used to visualize any other attributes of the 
+network on an interactive .html map. 
 
 <p align="center">
 <img src="docs/_static/pipe_criticality.PNG" alt="pipe criticality map" width="500"/>
 </p>
 
-Additionally, the mapping utilities can be used to visualize any other attributes of the network on an interactive .html map. 
+Please see the [project documentation](https://criticalitymaps.readthedocs.io/en/latest/) for more details
+on usage and capabilities.
 
 Funding Disclaimer
 ------------------
