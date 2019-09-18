@@ -1,6 +1,13 @@
-conda:
-    file: docs/environment.yml
+#specify what version is being used
+version: 2
+#build docs with sphinx and point it to the conf.py
+sphinx:
+    configuration: docs/conf.py
 # Python environment configuration
 python:
-    version: 3.7
-    setup_py_install: true
+   version: 3.7
+   install:
+      - requirements: docs/requirements.txt
+      - requirements: requirements.txt
+      - method: setuptools
+        path: .
