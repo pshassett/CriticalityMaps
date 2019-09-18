@@ -1,0 +1,13 @@
+name: docbuild
+dependencies:
+            - python=3.6
+            - numpy
+            - scipy
+            - networkx
+            - pandas
+            - matplotlib
+            - utm
+            - pyyaml
+            - jinja2
+            - sphinx
+            - numpydoc
