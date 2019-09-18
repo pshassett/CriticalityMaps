@@ -5,7 +5,7 @@ version: 2
 sphinx:
         configuration: docs/conf.py
 # Define what formats (PDF, ePub) of additional output should be produced
-        formats: all 
+formats: all 
 # Python environment configuration
 python:
         setup_py_install: true
