@@ -11,13 +11,12 @@ applying a fire fighting demand and measuring the impact on surrounding
 customers for all possible firefighting points in the system. Key parameters
 to customize this analysis are:
 
-* the firefighting demand (defaults to 1500 gpm)
-* the duration of the fire demand (defaults to 2 hr)
-* the diameter tresholds that define which pipes will have fire demands applied (defaults to all pipes between 6 and 8in in diameter)
+* firefighting demand (defaults to 1500 gpm)
+* duration of the fire demand (defaults to 2 hr)
+* diameter tresholds of pipes that will have fire demands applied (defaults to all pipes between 6 and 8in in diameter)
  
-See the fire_criticality_analysis in the api documentation for more details on
+See :func:`.fire_criticality_analysis` in the api documentation for more details on
 the customization options.
-
 
 Pipe Criticality
 ^^^^^^^^^^^^^^^^
@@ -25,13 +24,50 @@ Pipe criticality analysis provides insight on where the most critical
 pipes of the system are. To determine the criticality of a single pipe, the 
 pipe is closed during a simulation and the impact on surrounding customers 
 is measured. This process is then repeated for all pipes of interest 
-in the system.  Key parameters to customize this analysis are:
+in the system. Key parameters to customize this analysis are:
 
-* The duration of the pipe closure (defaults to 48 hr)
-* The diameter tresholds that define which pipes will have pipe closures applied (defaults to all pipes greater than 12in in diameter)
+* duration of the pipe closure (defaults to 48 hr)
+* diameter tresholds of pipes that will have pipe closures applied (defaults to all pipes greater than 12in in diameter)
 
-See the pipe_criticality_analysis in the api documentation for more details on
+See :func:`.pipe_criticality_analysis` in the api documentation for more details on
 the customization options.
+
+Output and Post-processing
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+The core output of the criticality analyses is a [key:value] .yml file log where each key is the
+ID of a node/link tested and each value is the result of that test. Any nodes that fall below the 
+minimum pressure threshold (a set-able parameter ``p_min``) of a pressure driven demand
+simulation recieved **none** of their requested demand during that period and are thus deemed 
+impacted.
+
+* If there were nodes impacted at a given test node/link, the value for that node/link will beanother set of [key:value] entries with the impacted node's ID as the key and its lowest observed pressure as the value.
+* If there was no impact at a given test node/link, the value will be "NO EFFECTED NODES".
+* Otherwise, if the simulation failed at a given test node/link, the value will be "failed:", followed by the exception message associated with the failure.
+
+Below is an example of the .yml output demonstrating these three possible cases.
+::
+    # a node/link with multiple impacted nodes
+    '123':
+        '23': 11.33654
+        '34': 5.345237
+        '56': 10.21345
+        '67': 9.234789
+    # a node/link with no impacted nodes
+    '35': NO EFFECTED NODES
+    # a node/link with failed simulation
+    '773': "failed: Simulation did not converge. Reached maximum number of iterations: 499"
+
+By default, the criticality analysis methods will additionally create the following outputs:
+
+* a .csv file log of the population and nodes impacted at each node/link tested
+* .pdf maps of the population and nodes impacted at each node/link tested
+
+This behavior can be overridden by setting the post_process argument to False. The results
+summary .yml file will still be produced and can be then custom-processed with the process_criticality()
+function. See the api documentation on :func:`.process_criticality` for more details.
+
+The results of criticality analyses can also be displayed on an interactive map as demonstrated in 
+the :ref:`criticality-maps` section.
 
 Multiprocessing
 ^^^^^^^^^^^^^^^
@@ -43,12 +79,14 @@ on machines with extra computing capacity available.
 
 To enable multiprocessing on your criticlaity analysis, in addition to setting
 the multiprocess keyword argument to True, the code the criticality analysis
-must be wrapped in a if name == "__main__" block as shown below.
-    
+must be wrapped in a ``if __name__ == "__main__":`` block as shown below.
+::    
     if __name__ == "__main__":
-        criticalityMaps.criticality.fire_criticality_analysis(wn, multiprocess=True)
+        cm.fire_criticality_analysis(wn, multiprocess=True)
+        cm.pipe_criticality_analysis(wn, multiprocess=True)
 
-By default criticalityMaps will use about 2/3 of the machine's cpu. This 
-behavior can be overridden by designating a value for `num_processors` to
-either increase or decrease the amount of cpu's used.
+By default criticalityMaps will use about 66.7% of the machine's cpu. The numbers of cpu's
+used can be increased or decreased used by assigning a value for ``num_processors``. See 
+the api documentation on :func:`.fire_criticality_analysis` and :func:`.pipe_criticality_analysis`
+for more details on the multiprocessing options.
 

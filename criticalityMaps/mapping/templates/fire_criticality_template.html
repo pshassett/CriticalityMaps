@@ -285,7 +285,8 @@
             var zoom = 16;
             map.setView(latlng, zoom); // access the zoom
         },
-        hideMarkerOnCollapse: true
+        hideMarkerOnCollapse: true,
+        textPlaceholder: 'Search by ID...'
     }).addTo(map);
      
      
@@ -334,7 +335,7 @@
         .attr("class", "caption")
         .attr("y", 21)
         .style("font", "14px arial")
-        .text("Population Impacted By Pressure Below 20 psi");
+        .text("Population Impacted By Low Pressure Conditions");
      
     L.control.scale({position:'topright'}).addTo(map);
 
