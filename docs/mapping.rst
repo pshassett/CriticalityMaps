@@ -84,7 +84,7 @@ so long as it is indexed by node/link ID.
 
 Mapping the wn_dataframe
 ^^^^^^^^^^^^^^^^^^^^^^^^
-To map the data stored in the :class:`.wn_dataframe` on the water network, simply call the :func:`.make_map` function 
+To map the data stored in the :class:`.wn_dataframe` on the water network, simply call the :meth:`.make_map` function 
 of the wn_dataframe. Specify which fields will appear in tooltips and which fields are added as 
 map overlays on the water network (Note: any fields added to map_columns will automatically be 
 added to the tooltip when that layer is activated on the map).
@@ -99,5 +99,5 @@ added to the tooltip when that layer is activated on the map).
         <iframe src="_static/Net3_map.html" frameborder="0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
     </div>
 
-See the :class:`.wn_dataframe` class and its :func:`.make_map` method in the api documentation 
+See the :class:`.wn_dataframe` class and its :meth:`.make_map` method in the api documentation 
 for more details on implementation options.

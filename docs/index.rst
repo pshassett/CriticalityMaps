@@ -1,7 +1,7 @@
 CriticalityMaps
 ===============================================
 
-CriticalityMaps is a `WNTR <https://wntr.readthedocs.io/en/latest/index.html>`-based 
+CriticalityMaps is a `WNTR <https://wntr.readthedocs.io/en/latest/index.html>`_-based 
 utility for running large sets of fire and pipe criticality simulations and visualizing
 the results on interactive leaflet.js html maps. 
 
@@ -20,7 +20,7 @@ Example Fire Criticality interactive map. Click on a highlited pipe to see the i
 """""""""""""""""""
 All values in CriticalityMaps are in SI for conformity with the 
 `WNTR units conventions <https://wntr.readthedocs.io/en/latest/units.html>`_.
-All unit conversions are left to user.
+All unit conversions are left to the user.
 
 Overview
 ========

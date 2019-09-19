@@ -36,7 +36,7 @@ Output and Post-processing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 The core output of the criticality analyses is a [key:value] .yml file log where each key is the
 ID of a node/link tested and each value is the result of that test. Any nodes that fall below the 
-minimum pressure threshold (a set-able parameter ``p_min``) of a pressure driven demand
+minimum pressure threshold (a settable parameter ``p_min``) of a pressure driven demand
 simulation recieved **none** of their requested demand during that period and are thus deemed 
 impacted.
 
@@ -63,7 +63,7 @@ By default, the criticality analysis methods will additionally create the follow
 * .pdf maps of the population and nodes impacted at each node/link tested
 
 This behavior can be overridden by setting the post_process argument to False. The results
-summary .yml file will still be produced and can be then custom-processed with the process_criticality()
+summary .yml file will still be produced and can be then custom-processed with the :func:`.process_criticality`
 function. See the api documentation on :func:`.process_criticality` for more details.
 
 The results of criticality analyses can also be displayed on an interactive map as demonstrated in 
