@@ -9,8 +9,13 @@ DESCRIPTION = 'WNTR utility for generating criticality maps'
 LONG_DESCRIPTION = open('README.md').read()
 AUTHOR = 'Patrick Hassett'
 MAINTAINER_EMAIL = 'pshassett@humboldt.edu'
-LICENSE = 'Revised BSD'
+LICENSE = 'MIT'
 URL = 'https://github.com/pshassett/WNTRCriticalityMaps'
+INSTALL_REQUIRES = ['wntr',
+                    'numpy',
+                    'pyyaml',
+                    'utm',
+                    'jinja2']
 
 setuptools_kwargs = {
     'zip_safe': False,

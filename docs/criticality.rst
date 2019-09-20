@@ -74,8 +74,7 @@ Multiprocessing
 CriticalityMaps has the built-in ability to execute criticality 
 analysis with mulitiprocessing, enabling multiple processors to work
 on a set of simulations at once.  This offers a significant speedup in 
-execution time, especially in cases with a large number of simulations and
-on machines with extra computing capacity available.
+execution time, especially in cases with a large number of simulations and extra computing capacity available.
 
 To enable multiprocessing on your criticlaity analysis, in addition to setting
 the multiprocess keyword argument to True, the code the criticality analysis
