@@ -11,7 +11,7 @@ import jinja2
 from criticalityMaps.mapping.geojson_handler import _criticality_yml_to_geojson, inp_to_geojson
 
 
-def make_criticality_map(wn, results_file, center, pop=None):
+def make_criticality_map(wn, results_file, center, output_file=None, pop=None):
     '''
     Make a criticality map from a criticality results file.
 
@@ -26,6 +26,11 @@ def make_criticality_map(wn, results_file, center, pop=None):
     center: list of floats
         [latitude, longitude] of the center of the map
 
+    output_file: str/path-like
+            path and .html file name for map output.
+            Defaults to the path of the results file with '.yml' replaced with
+            '_map.html'
+
     pop: dict/Pandas Series, optional
         population estimate at each node. If None, will use
         wntr.metrics.population(wn).
@@ -33,6 +38,8 @@ def make_criticality_map(wn, results_file, center, pop=None):
         Defaults to None
 
     '''
+    if output_file is None:
+        output_file = results_file.split('.yml')[0] + "_map.html"
     # Produce a geojson layer for the wn
     wn_layer = inp_to_geojson(wn, to_file=False)
     # Produce a geojson layer for the criticality results
@@ -47,8 +54,7 @@ def make_criticality_map(wn, results_file, center, pop=None):
     # Pass geojson layers to fill the template file
     _fill_criticality_template(html_template, wn_layer, center,
                                data_layer,
-                               output=results_file.split('.yml')[0] +
-                               "_map.html")
+                               output=output_file)
 
 
 def _fill_criticality_template(template_file, wn_geojson, latlong,
