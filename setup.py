@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 from distutils.core import Extension
 
 DISTNAME = 'criticalityMaps'
-VERSION = '0.0.1'
+VERSION = '0.0.2'
 PACKAGES = find_packages()
 EXTENSIONS = []
 DESCRIPTION = 'WNTR utility for generating criticality maps'
