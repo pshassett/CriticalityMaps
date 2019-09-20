@@ -11,15 +11,21 @@ AUTHOR = 'Patrick Hassett'
 MAINTAINER_EMAIL = 'pshassett@humboldt.edu'
 LICENSE = 'MIT'
 URL = 'https://github.com/pshassett/WNTRCriticalityMaps'
-INSTALL_REQUIRES = ['wntr',
+INSTALL_REQUIRES = ['networkx',
+                    'pandas',
                     'numpy',
+                    'scipy',
+                    'matplotlib',
+                    'plotly',
+                    'wntr',
                     'pyyaml',
                     'utm',
-                    'jinja2']
+                    'jinja2',
+                    'six']
 
 setuptools_kwargs = {
     'zip_safe': False,
-    'install_requires': [],
+    'install_requires': INSTALL_REQUIRES,
     'scripts': [],
     'include_package_data': True
 }
