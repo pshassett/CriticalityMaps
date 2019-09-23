@@ -1,5 +1,3 @@
-import logging
-import numpy as np
 import wntr
 import criticalityMaps as cm
 
@@ -9,36 +7,32 @@ inp_file = 'Net3.inp'
 wn = wntr.network.WaterNetworkModel(inp_file)
 longlat_points = {'10': (-100.125, 40.125),
                   '213': (-99.875, 39.875)}
-center = [40.0, -100.0]
 wn = wntr.morph.convert_node_coordinates_to_longlat(wn, longlat_points)
-
-# Pipe criticality example.
-cm.criticality.pipe_criticality_analysis(wn, multiprocess=False,
-                                         output_dir='./pipe_criticality')
-cm.mapping.make_criticality_map(wn,
-                                './pipe_criticality/pipe_criticality_summary.yml',
-                                center)
-
 
 # Fire criticality example.
 cm.criticality.fire_criticality_analysis(wn, multiprocess=False,
                                          output_dir='./fire_criticality'
                                          )
-cm.mapping.make_criticality_map(wn, './fire_criticality/fire_criticality_summary.yml',
-                                center)
+cm.mapping.make_criticality_map(wn, './fire_criticality/fire_criticality_summary.yml')
+
+# Pipe criticality example.
+cm.criticality.pipe_criticality_analysis(wn, multiprocess=False,
+                                         output_dir='./pipe_criticality')
+cm.mapping.make_criticality_map(wn,
+                                './pipe_criticality/pipe_criticality_summary.yml')
+
 '''
 # Multiprocessing example
 if __name__ == '__main__':
     cm.criticality.pipe_criticality_analysis(wn, multiprocess=False,
                                              output_dir='./pipe_criticality')
     cm.mapping.make_criticality_map(wn,
-                                './pipe_criticality/pipe_criticality_summary.yml',
-                                center)
+                                    './pipe_criticality/pipe_criticality_summary.yml')
 
     cm.criticality.fire_criticality_analysis(wn, multiprocess=False,
                                              output_dir='./fire_criticality')
-    cm.mapping.make_criticality_map(wn, './fire_criticality/fire_criticality_summary.yml',
-                                center)
+    cm.mapping.make_criticality_map(wn,
+                                    './fire_criticality/fire_criticality_summary.yml')
 
 '''
 # Dataframe-mapping example
@@ -51,4 +45,4 @@ wn_df = cm.mapping.wn_dataframe(wn,
                                            'Elevation': node_elevation},
                                 link_data={'Diameter': pipe_diam}
                                 )
-wn_df.make_map(center, map_columns=['Base Demand', 'Elevation', 'Diameter'])
+wn_df.make_map(map_columns=['Base Demand', 'Elevation', 'Diameter'])

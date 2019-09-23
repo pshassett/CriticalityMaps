@@ -11,7 +11,7 @@ import jinja2
 from criticalityMaps.mapping.geojson_handler import _criticality_yml_to_geojson, inp_to_geojson
 
 
-def make_criticality_map(wn, results_file, center, output_file=None, pop=None):
+def make_criticality_map(wn, results_file, output_file=None, pop=None):
     '''
     Make a criticality map from a criticality results file.
 
@@ -22,9 +22,6 @@ def make_criticality_map(wn, results_file, center, output_file=None, pop=None):
 
     results_file: str/path-like object
         path to the .yml results file from a criticality analysis
-
-    center: list of floats
-        [latitude, longitude] of the center of the map
 
     output_file: str/path-like
             path and .html file name for map output.
@@ -52,12 +49,12 @@ def make_criticality_map(wn, results_file, center, output_file=None, pop=None):
         html_template = './templates/pipe_criticality_template.html'
         data_layer = {'Pipe Criticality': criticality_layer}
     # Pass geojson layers to fill the template file
-    _fill_criticality_template(html_template, wn_layer, center,
+    _fill_criticality_template(html_template, wn_layer,
                                data_layer,
                                output=output_file)
 
 
-def _fill_criticality_template(template_file, wn_geojson, latlong,
+def _fill_criticality_template(template_file, wn_geojson,
                                network_data_layers, output='./wn_map.html'):
     '''
     Create a leaflet map of the water network from a geojson representation.
@@ -70,9 +67,6 @@ def _fill_criticality_template(template_file, wn_geojson, latlong,
 
     template_file: string/path-like object
             jinja2 html template file path
-
-    latlong: list
-            latitude, longitude of the center of the map
 
     wn_geojson: dict in geojson format
         geojson spatial representation of the water network
@@ -121,7 +115,6 @@ def _fill_criticality_template(template_file, wn_geojson, latlong,
     # Fill the jinja2 html template and save the file
     with open(output, 'w') as fp:
         fp.write(j2_env.get_template(template_file).render(
-                latlong=latlong,
                 wn_geojson=wn_geojson,
                 data_layers_geojson=data_layers)
         )

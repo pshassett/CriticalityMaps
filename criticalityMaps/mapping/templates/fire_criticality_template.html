@@ -52,8 +52,6 @@
 
     var map = L.map(
         'map', {
-        center: {{latlong}},
-        zoom: 12,
         maxBounds: bounds,
         layers: [],
         worldCopyJump: false,
@@ -252,6 +250,7 @@
     }).bindTooltip(wnTooltipBuilder, {"sticky": true})
     .bindPopup(wnTooltipBuilder, {"sticky": true});
     wnGeojsonLayer.addTo(map);
+    map.fitBounds(wnGeojsonLayer.getBounds())
         
     var dataLayers = {}
     {% for id, layer in data_layers_geojson.items() %}

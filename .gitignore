@@ -7,3 +7,4 @@ dist/
 *.pickle
 fire_criticality/
 pipe_criticality/
+examples/*.html

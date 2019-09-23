@@ -49,7 +49,7 @@ class wn_dataframe(object):
         self.node_data = node_coordinates.join(pd.DataFrame(node_data))
         self.link_data = link_coordinates.join(pd.DataFrame(link_data))
 
-    def make_map(self, center, output_file=None, map_columns=[],
+    def make_map(self, output_file=None, map_columns=[],
                  tooltip_columns=[], geojson_layers={}):
         """
         Make a .html web map of the wn and any data contained in the wn_dataframe
@@ -143,7 +143,6 @@ already exist in the wn_dataframe.')
         with open(output_file, 'w') as fp:
             fp.write(j2_env.get_template(
                     './templates/dataframe_map_template.html').render(
-                    center=center,
                     node_data=self.node_data,
                     node_map_fields=node_map_fields,
                     node_tooltip_fields=node_tooltip_fields,

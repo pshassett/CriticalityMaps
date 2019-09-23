@@ -50,8 +50,6 @@
     var bounds = null;
     var map = L.map(
         'map', {
-        center: {{center}},
-        zoom: 12,
         maxBounds: bounds,
         layers: [],
         worldCopyJump: false,
@@ -288,7 +286,8 @@
                     tooltipFields: baseNodeTooltipFields
         });
     nodeLayer.addTo(map);
-        
+    map.fitBounds(nodeLayer.getBounds())
+    
     var linkGeoJSON = makeLinkLayer(linkData, linkFieldSet);
     baseLinkTooltipFields = linkTooltipFields;
     baseLinkTooltipFields.unshift('ID');
