@@ -1,2 +1,10 @@
 /.spyproject/
 /*.egg-info/
+__pycache__/
+_build/
+build/
+dist/
+*.pickle
+fire_criticality/
+pipe_criticality/
+examples/*.html

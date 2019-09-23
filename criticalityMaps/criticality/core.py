@@ -155,7 +155,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
         results = runner(args, num_processors)
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(results), fp, default_flow_style=False)
-        print('runtime =', time.time() - start)
+        print('fire criticality runtime (sec) =', round(time.time() - start))
     else:
         # Define arguments for fire analysis.
         result = []
@@ -167,7 +167,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
                           )
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(result), fp, default_flow_style=False)
-        print('runtime =', time.time() - start)
+        print('fire criticality runtime (sec) =', round(time.time() - start))
     # Clean up temp files
     os.remove('./_wn.pickle')
     if not save_log:
@@ -304,7 +304,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
         results = runner(args, num_processors)
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(results), fp, default_flow_style=False)
-        print('runtime =', time.time() - start)
+        print('pipe criticality runtime (sec) =', round(time.time() - start))
     else:
         # Define arguments for fire analysis.
         result = []
@@ -316,7 +316,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
                           )
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(result), fp, default_flow_style=False)
-        print('runtime =', time.time() - start)
+        print('pipe criticality runtime (sec) =', round(time.time() - start))
     # Clean up temp files.
     os.remove('./_wn.pickle')
     if not save_log:
@@ -326,22 +326,30 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
         process_criticality(_wn, summary_file, output_dir, pop)
 
 
-def process_criticality(_wn, summary_file, output_dir, pop=None,
-                        save_maps=True, save_csvs=True):
+def process_criticality(wn, summary_file, output_dir, pop=None,
+                        save_maps=True, save_csv=True):
     """
     Process the results of a criticality analysis and produce some figures
 
     Parameters
     ----------
-    _wn: wntr WaterNetworkModel object
+    wn: wntr WaterNetworkModel object
         the _wn that the analysis was performed on
 
     summary_file: str/path-like object
         path to the .yml summary file produced from a criticality analysis
 
-    pop: dict or pandas Series
+    pop: dict or pandas Series, optional
         population estimate at each junction of the _wn. Output from
         `wntr.metrics.population` is suitable input format.
+
+    save_maps: bool, optional
+        option to save pdf maps of the population and nodes impacted at each node/link tested.
+        Defaults to True.
+
+    save_csv: bool, optional
+        option to save a csv log of the population and nodes impacted at each node/link tested.
+        Defaults to True.
 
     """
     # Set some local parameters.
@@ -354,7 +362,7 @@ def process_criticality(_wn, summary_file, output_dir, pop=None,
     plt.close('all')
     # Calculate population as necessary
     if pop is None:
-        pop = wntr.metrics.population(_wn)
+        pop = wntr.metrics.population(wn)
     # Parse the results file into nodes and population impacted.
     with open(summary_file, 'r') as fp:
         summary = yaml.load(fp, Loader=yaml.BaseLoader)
@@ -372,48 +380,49 @@ def process_criticality(_wn, summary_file, output_dir, pop=None,
         elif 'failed:' in val:
             failed_sim[key] = val
     # Produce output and save in output dir
-    if save_csvs:
-        summary_len.to_csv(os.path.join(output_dir, 'nodes_impacted.csv'),
-                           header=False)
-        summary_pop.to_csv(os.path.join(output_dir, 'pop_impacted.csv'),
-                           header=False)
+    if save_csv:
+        csv_summary = pd.DataFrame({"Nodes Impacted": summary_len,
+                                    "Population Impacted": summary_pop})
+        csv_summary.index.name = "ID"
+        csv_summary.to_csv(os.path.join(output_dir, 'pop_node_impacts.csv'))
+
     if save_maps:
         if 'fire' in summary_file:
             fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
-            wntr.graphics.plot_network(_wn, link_attribute='length',
+            wntr.graphics.plot_network(wn, link_attribute='length',
                                        node_size=0, link_cmap=cmap,
                                        add_colorbar=False, ax=ax)
-            wntr.graphics.plot_network(_wn, node_attribute=summary_len,
+            wntr.graphics.plot_network(wn, node_attribute=summary_len,
                                        node_size=20, link_width=0,
                                        title='Number of nodes impacted by low \
 pressure conditions\nfor each fire demand', ax=ax)
             plt.savefig(os.path.join(output_dir, 'nodes_impacted_map.pdf'))
 
             fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
-            wntr.graphics.plot_network(_wn, link_attribute='length',
+            wntr.graphics.plot_network(wn, link_attribute='length',
                                        node_size=0, link_cmap=cmap,
                                        add_colorbar=False, ax=ax)
-            wntr.graphics.plot_network(_wn, node_attribute=summary_pop,
+            wntr.graphics.plot_network(wn, node_attribute=summary_pop,
                                        node_size=20, link_width=0,
                                        title='Number of people impacted by low\
  pressure conditions\nfor each fire demand', ax=ax)
             plt.savefig(os.path.join(output_dir, 'pop_impacted_map.pdf'))
         else:
             fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
-            wntr.graphics.plot_network(_wn, link_attribute='length',
+            wntr.graphics.plot_network(wn, link_attribute='length',
                                        node_size=0, link_cmap=cmap,
                                        add_colorbar=False, ax=ax)
-            wntr.graphics.plot_network(_wn, link_attribute=summary_len,
+            wntr.graphics.plot_network(wn, link_attribute=summary_len,
                                        node_size=0, link_width=2,
                                        title='Number of nodes impacted by low \
 pressure conditions\nfor each pipe closure', ax=ax)
             plt.savefig(os.path.join(output_dir, 'nodes_impacted_map.pdf'))
 
             fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
-            wntr.graphics.plot_network(_wn, link_attribute='length',
+            wntr.graphics.plot_network(wn, link_attribute='length',
                                        node_size=0, link_cmap=cmap,
                                        add_colorbar=False, ax=ax)
-            wntr.graphics.plot_network(_wn, link_attribute=summary_pop,
+            wntr.graphics.plot_network(wn, link_attribute=summary_pop,
                                        node_size=0, link_width=2,
                                        title='Number of people impacted by low\
  pressure conditions\nfor each pipe closure', ax=ax)

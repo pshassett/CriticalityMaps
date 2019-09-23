@@ -1,3 +1,5 @@
 wntr
-PyYaml
-Jinja2
+numpy
+utm
+pyyaml
+jinja2

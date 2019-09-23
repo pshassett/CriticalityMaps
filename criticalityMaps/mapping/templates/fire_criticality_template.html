@@ -52,8 +52,6 @@
 
     var map = L.map(
         'map', {
-        center: {{latlong}},
-        zoom: 12,
         maxBounds: bounds,
         layers: [],
         worldCopyJump: false,
@@ -227,9 +225,8 @@
                     }
                 }).addTo(impact_layers);
 
-                nodes_impacted_layer.bindTooltip(tooltipBuilder, {
-                    tooltipFields: ['ID', 'Base Demand (gpm)'],
-                    "sticky": true});
+                nodes_impacted_layer.bindTooltip(wnTooltipBuilder, {"sticky": true})
+                                    .bindPopup(wnTooltipBuilder);
             } catch (e) {
                 alert(e.message)
             }
@@ -250,8 +247,10 @@
         style: function(feature){
             return nodeMarkerOptions;
         }
-    }).bindTooltip(wnTooltipBuilder, {"sticky": true});
+    }).bindTooltip(wnTooltipBuilder, {"sticky": true})
+    .bindPopup(wnTooltipBuilder, {"sticky": true});
     wnGeojsonLayer.addTo(map);
+    map.fitBounds(wnGeojsonLayer.getBounds())
         
     var dataLayers = {}
     {% for id, layer in data_layers_geojson.items() %}
@@ -270,7 +269,8 @@
         {{id.replace(" ","")}}.bindTooltip(tooltipBuilder, {
             tooltipFields: ['ID', 'Base Demand (gpm)', 'Nodes Impacted', 'Population Impacted'],
             "sticky": true
-        });
+        })
+        .bindPopup(tooltipBuilder, {tooltipFields: ['ID', 'Base Demand (gpm)', 'Nodes Impacted', 'Population Impacted']});
         dataLayers["{{id}}"] = {{id.replace(" ","")}}
         {{id.replace(" ","")}}.remove()
     {% endfor %}
@@ -284,7 +284,8 @@
             var zoom = 16;
             map.setView(latlng, zoom); // access the zoom
         },
-        hideMarkerOnCollapse: true
+        hideMarkerOnCollapse: true,
+        textPlaceholder: 'Search by ID...'
     }).addTo(map);
      
      
@@ -333,7 +334,7 @@
         .attr("class", "caption")
         .attr("y", 21)
         .style("font", "14px arial")
-        .text("Population Impacted By Pressure Below 20 psi");
+        .text("Population Impacted By Low Pressure Conditions");
      
     L.control.scale({position:'topright'}).addTo(map);
 
