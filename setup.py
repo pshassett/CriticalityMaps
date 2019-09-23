@@ -10,7 +10,7 @@ LONG_DESCRIPTION = open('README.md').read()
 AUTHOR = 'Patrick Hassett'
 MAINTAINER_EMAIL = 'pshassett@humboldt.edu'
 LICENSE = 'MIT'
-URL = 'https://github.com/pshassett/WNTRCriticalityMaps'
+URL = 'https://github.com/pshassett/CriticalityMaps'
 INSTALL_REQUIRES = ['networkx',
                     'pandas',
                     'numpy',
