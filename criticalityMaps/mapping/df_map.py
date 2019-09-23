@@ -21,13 +21,10 @@ class wn_dataframe(object):
         WaterNetworkModel of interest
 
     node_data: pandas DataFrame or other object than can be converted to a
-        DataFrame by pd.DataFrame(node_data).
+        DataFrame by pd.DataFrame(node_data)indexed by node id
 
-        data indexed by node id
-
-    link_data: pandas DataFrame
-
-        data indexed by link id
+    link_data: pandas DataFrame or other object than can be converted to a
+        DataFrame by pd.DataFrame(node_data)indexed by link id
 
     '''
     def __init__(self, wn, node_data=None, link_data=None):
@@ -57,9 +54,6 @@ class wn_dataframe(object):
         Parameters
         ----------
 
-        center: list of floats
-            [lat, long] for the center point of the map.
-
         output_file: str/path-like
             path and .html file name for map output.
             Defaults to the name of the wn .inp file in the working directory.
@@ -75,20 +69,6 @@ class wn_dataframe(object):
             components with mouse.
 
             Defaults to an empty list: [].
-
-        geojson_layers: dict, optional
-            dict with layer names as keys and geojson objects or paths to
-            geojson files as values.
-
-            To custom style the layer, specify add a 'style' attribute as a
-            Leaflet path-option (https://leafletjs.com/reference-1.5.0.html#path-option)
-            to the 'properties' of each feature of the geojson object.
-
-            For example:
-
-                {"geometry": [0.00, 1.00],"id": "a point","properties":{"style": {"fillColor": "#fe943f", "fillOpacity": 0.5, "weight": 0}},'type': 'Point'}
-
-            Defaults to None.
 
         """
         # Define the output file.

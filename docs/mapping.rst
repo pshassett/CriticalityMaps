@@ -7,14 +7,13 @@ Mapping
 Criticality Maps
 ----------------
 There are built in methods to create interactive maps from the results of completed 
-criticality analyses. To create a criticality map, enter the wn, the criticality results file,
-and the map center into the :func:`.make_criticality_map` function:
+criticality analyses. To create a criticality map, enter the wn and the criticality results file
+into the :func:`.make_criticality_map` function:
 ::
-  center = [40, -100]
   # Fire criticality example
-  cm.make_criticality_map(wn, fire_criticality_summary.yml, center)
+  cm.make_criticality_map(wn, fire_criticality_summary.yml)
   # Pipe criticality example
-  cm.make_criticality_map(wn, pipe_criticality_summary.yml, center)
+  cm.make_criticality_map(wn, pipe_criticality_summary.yml)
 
 .. raw:: html
     
@@ -89,9 +88,7 @@ of the wn_dataframe. Specify which fields will appear in tooltips and which fiel
 map overlays on the water network (Note: any fields added to map_columns will automatically be 
 added to the tooltip when that layer is activated on the map).
 ::
-    my_wn_dataframe.make_map(center,
-                             map_columns=["base demand", "diameter"],
-                             tooltip_columns=["elevation"])
+    my_wn_dataframe.make_map(map_columns=["base demand", "diameter"], tooltip_columns=["elevation"])
 
 .. raw:: html
     

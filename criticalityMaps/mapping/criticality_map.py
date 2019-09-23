@@ -18,7 +18,8 @@ def make_criticality_map(wn, results_file, output_file=None, pop=None):
 
     Parameters
     ----------
-    wn:
+    wn: wntr waternetwork model
+        the wntr waternetwork model of interest
 
     results_file: str/path-like object
         path to the .yml results file from a criticality analysis
