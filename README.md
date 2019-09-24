@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.com/pshassett/CriticalityMaps.svg?branch=master)](https://travis-ci.com/pshassett/CriticalityMaps) [![Documentation Status](https://readthedocs.org/projects/criticalitymaps/badge/?version=latest)](https://criticalitymaps.readthedocs.io/en/latest/?badge=latest) 
+[![Build Status](https://travis-ci.com/pshassett/CriticalityMaps.svg?branch=master)](https://travis-ci.com/pshassett/CriticalityMaps) [![Coverage Status](https://coveralls.io/repos/github/pshassett/CriticalityMaps/badge.svg?branch=master)](https://coveralls.io/github/pshassett/CriticalityMaps?branch=master) [![Documentation Status](https://readthedocs.org/projects/criticalitymaps/badge/?version=latest)](https://criticalitymaps.readthedocs.io/en/latest/?badge=latest) 
 
 CriticalityMaps
 ---------------
