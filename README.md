@@ -1,4 +1,4 @@
-[![Documentation Status](https://readthedocs.org/projects/criticalitymaps/badge/?version=latest)](https://criticalitymaps.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.com/pshassett/CriticalityMaps.svg?branch=master)](https://travis-ci.com/pshassett/CriticalityMaps) [![Documentation Status](https://readthedocs.org/projects/criticalitymaps/badge/?version=latest)](https://criticalitymaps.readthedocs.io/en/latest/?badge=latest) 
 
 CriticalityMaps
 ---------------
