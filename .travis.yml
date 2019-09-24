@@ -8,6 +8,7 @@ python:
 install:
     - echo "install"
     - python setup.py develop
+    - pip install python-coveralls
     - pip install coverage
 
 script:
