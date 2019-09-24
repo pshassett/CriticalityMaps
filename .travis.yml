@@ -8,6 +8,7 @@ python:
 install:
     - echo "install"
     - python setup.py develop
+    - pip install coverage
 
 script:
     - nosetests -v --nologcapture --with-coverage --cover-package=criticalityMaps
