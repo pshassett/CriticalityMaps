@@ -8,3 +8,5 @@ dist/
 fire_criticality/
 pipe_criticality/
 examples/*.html
+tests/*.yml
+*.coverage

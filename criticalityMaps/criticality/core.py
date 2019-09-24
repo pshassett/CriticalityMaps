@@ -23,6 +23,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
                               fire_start=86400, fire_duration=7200,
                               min_pipe_diam=0.1524, max_pipe_diam=0.2032,
                               p_nom=17.58, p_min=14.06, save_log=False,
+                              summary_file='fire_criticality_summary.yml',
                               post_process=True, pop=None, multiprocess=False,
                               num_processors=None):
     """
@@ -82,6 +83,11 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
         results.
 
         Defaults to False.
+
+    summary_file: str, optional
+        file name for the yml summary file saved in output_dir
+
+        Defaults to 'fire_criticality_summary.yml'.
 
     post_process: boolean, optional
         option to post process the analysis results with process_criticality.
@@ -143,7 +149,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
     # Define output files.
     log_dir = os.path.join(output_dir, 'log', '')
     os.makedirs(log_dir, exist_ok=True)
-    summary_file = os.path.join(output_dir, 'fire_criticality_summary.yml')
+    summary_file = os.path.join(output_dir, summary_file)
     if multiprocess:
         # Define arguments for fire analysis.
         args = [(_fire_criticality, ('./_wn.pickle', fire_start, fire_duration,
@@ -180,8 +186,10 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
 def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
                               break_duration=172800, min_pipe_diam=0.3048,
                               max_pipe_diam=None, p_nom=17.58, p_min=14.06,
-                              save_log=False, post_process=True, pop=None,
-                              multiprocess=False, num_processors=None):
+                              save_log=False,
+                              summary_file='pipe_criticality_summary.yml',
+                              post_process=True, pop=None, multiprocess=False,
+                              num_processors=None):
     """
     A plug-and-play ready function for executing fire criticality analysis.
 
@@ -234,6 +242,11 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
         results.
 
         Defaults to False.
+
+    summary_file: str, optional
+        file name for the yml summary file saved in output_dir.
+
+        Defaults to 'pipe_criticality_summary.yml'.
 
     post_process: boolean, optional
         option to post process the analysis results with process_criticality.
@@ -291,7 +304,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
     # Define output files.
     log_dir = os.path.join(output_dir, 'log', '')
     os.makedirs(log_dir, exist_ok=True)
-    summary_file = os.path.join(output_dir, 'pipe_criticality_summary.yml')
+    summary_file = os.path.join(output_dir, summary_file)
     # run the simulations
     if multiprocess:
         # Define arguments for fire analysis.

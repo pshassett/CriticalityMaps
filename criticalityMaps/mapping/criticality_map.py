@@ -6,7 +6,6 @@ Created on Wed Aug  7 18:41:45 2019
 """
 import os
 import json
-import time
 import jinja2
 from criticalityMaps.mapping.geojson_handler import _criticality_yml_to_geojson, inp_to_geojson
 

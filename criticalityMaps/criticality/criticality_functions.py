@@ -41,6 +41,8 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
         temp = results.node['pressure'].loc[_wn.options.time.duration - 3600,
                                             nzd_nodes]
         temp = temp[temp < p_min]
+        # Round off extra decimals
+        temp = temp.round(decimals=5)
         # Remove nodes that are below pressure threshold in base case.
         unique_results = temp[set(temp.index)
                               - set(nodes_below_pmin[_wn.sim_time - 3600])]
@@ -87,7 +89,8 @@ def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
                                             _wn.options.time.duration,
                                             nzd_nodes]
         temp = temp[temp < p_min]
-
+        # Round off extra decimals
+        temp = temp.round(decimals=5)
         # Remove nodes that are below pressure threshold in base case.
         for val in list(temp.index):
             for node in nodes_below_pmin[val]:

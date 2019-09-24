@@ -8,7 +8,6 @@ import os
 import copy
 import jinja2
 import pandas as pd
-import wntr
 
 
 class wn_dataframe(object):
