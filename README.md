@@ -13,6 +13,7 @@ network on an interactive .html map.
 
 Please see the [project documentation](https://criticalitymaps.readthedocs.io/en/latest/) for more details
 on usage and capabilities.
+The package can be [pip installed](https://pypi.org/project/criticalityMaps/) or cloned and installed via setup.py install/develop.
 
 Funding Disclaimer
 ------------------
