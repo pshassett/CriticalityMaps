@@ -122,11 +122,11 @@ already exist in the wn_dataframe.')
         with open(output_file, 'w') as fp:
             fp.write(j2_env.get_template(
                     './templates/dataframe_map_template.html').render(
-                    node_data=self.node_data,
+                    node_data=self.node_data.round(decimals=5),
                     node_map_fields=node_map_fields,
                     node_tooltip_fields=node_tooltip_fields,
                     node_field_set=node_field_set,
-                    link_data=self.link_data,
+                    link_data=self.link_data.round(decimals=5),
                     link_map_fields=link_map_fields,
                     link_tooltip_fields=link_tooltip_fields,
                     link_field_set=link_field_set,
