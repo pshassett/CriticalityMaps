@@ -3,6 +3,8 @@
 Created on Tue Jun  4 11:09:02 2019
 
 @author: PHassett
+
+Modified: jhogge
 """
 import os
 import shutil
@@ -16,7 +18,7 @@ import yaml
 import numpy as np
 import wntr
 from .mp_queue_tools import runner
-from .criticality_functions import _fire_criticality, _pipe_criticality
+from .criticality_functions import _fire_criticality, _pipe_criticality, _segment_criticality
 
 
 def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
@@ -307,7 +309,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
     summary_file = os.path.join(output_dir, summary_file)
     # run the simulations
     if multiprocess:
-        # Define arguments for fire analysis.
+        # Define arguments for pipe analysis.
         args = [(_pipe_criticality, ('./_wn.pickle', break_start,
                                      break_duration, p_min, p_nom, pipe,
                                      nzd_nodes, nodes_below_pmin, log_dir))
@@ -339,8 +341,171 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
         process_criticality(_wn, summary_file, output_dir, pop)
 
 
+def segment_criticality_analysis(wn, link_segments, node_segments, valve_layer, 
+                                 output_dir="./", break_start=86400, 
+                                 break_duration=172800, min_pipe_diam=0.3048, 
+                                 max_pipe_diam=None, p_nom=17.58, p_min=14.06, 
+                                 save_log=False,
+                                 summary_file='segment_criticality_summary.yml',
+                                 post_process=True, pop=None, multiprocess=False,
+                                 num_processors=None):
+    """
+    A plug-and-play ready function for executing segment criticality analysis.
+
+    Parameters
+    ----------
+    _wn: wntr WaterNetworkModel object
+        wntr _wn for the water network of interest
+    
+    link_segments: Pandas series
+        results of valve_segments algorithm, listing links and their segment
+
+    node_segments: Pandas series
+        results of valve_segments algorithm, listing nodes and their segment
+        
+    valve_layer: Pandas dataframe
+        list of node/segment combinations for the valves in the network
+        
+    output_dir: str/path-like object, optional
+        path to the directory to save the results of the analysis.
+
+        Defaults to the working directory ("./").
+
+    break_start: integer, optional
+        start time of the pipe break in seconds.
+
+        Defaults to 86400 sec (24hr).
+
+    break_duration: integer, optional
+        total duration of the fire demand in seconds.
+
+        Defaults to 172800 sec (48hr).
+
+    min_pipe_diam: float, optional
+        minimum diameter pipe to perform fire criticality analysis on(meters).
+
+        Defaults to 0.3048 m (12in).
+
+    max_pipe_diam: float, optional
+        maximum diameter pipe to perform fire criticality analysis on(meters).
+
+        Defaults to None.
+
+    p_nom: float, optional
+        nominal pressure for PDD (kPa). The minimun pressure to still recieve
+        full expected demand.
+
+        Defaults to 17.58 kPa (25psi).
+
+    p_min: float, optional
+        minimum pressure for PDD (kPa). The minimun pressure to still recieve
+        any demand.
+
+        Defaults to 14.06 kPa (20psi).
+
+    save_log: boolean, optional
+        option to save .json log files for each fire simulation. Otherwise,
+        log files are still created but deleted after successful completion of
+        all simulations. Serves as an effective back-up of the analysis
+        results.
+
+        Defaults to False.
+
+    summary_file: str, optional
+        file name for the yml summary file saved in output_dir.
+
+        Defaults to 'segment_criticality_summary.txt'.
+
+    post_process: boolean, optional
+        option to post process the analysis results with process_criticality.
+        Saves pdf maps of the nodes and population impacted at each fire node,
+        and corresponding csv files. To customize the post-processing output,
+        set post_process to False and then run process_criticality() with the
+        summary .yml file and any additional args as input.
+
+        Defaults to True.
+
+    pop: dict or pandas DataFrame, optional
+        population estimate at each node. Used for post processing. If
+        undefined, defaults to the result of wntr.metrics.population(_wn).
+
+        Defaults to None.
+
+    multiprocess: boolean, optional
+        option to run criticality across multiple processors.
+
+        Defaults to False.
+
+    num_processors: int, optional
+        the number of processors to use if mp is True.
+
+        Defaults to None if mp is False.
+        Otherwise, defaults to int(mp.cpu_count() * 0.666), or 2/3 of the
+        available processors.
+    """
+    # Make copy of the wn, preserving the original.
+    _wn = copy.deepcopy(wn)
+    # Start the timer.
+    start = time.time()
+    # Set the PDD simulation characteristics.
+    _set_PDD_params(_wn, p_nom, p_min)
+    _wn.options.time.duration = break_start + break_duration
+    # Pickle-serialize the _wn for reuse.
+    with open('./_wn.pickle', 'wb') as fp:
+        pickle.dump(_wn, fp)
+    # Check if any nzd junctions fall below pmin during sim period.
+    nzd_nodes = _get_nzd_nodes(_wn)
+    nodes_below_pmin = _get_lowP_nodes(_wn, p_min, nzd_nodes)
+
+    # Define output files.
+    log_dir = os.path.join(output_dir, 'log', '')
+    os.makedirs(log_dir, exist_ok=True)
+    summary_file = os.path.join(output_dir, summary_file)
+    n_segments = np.array([node_segments.max(), link_segments.max()]).max()
+    # run the simulations
+    if multiprocess:
+        # Define arguments for pipe analysis.
+        args = [(_segment_criticality, ('./_wn.pickle', segment,
+                                        link_segments, node_segments,
+                                        nodes_below_pmin, nzd_nodes,
+                                        log_dir, break_start, break_duration, 
+                                        p_min, p_nom)
+                )
+                for segment in np.arange(n_segments)]
+        # Execute in a mp fashion.
+        mp.freeze_support()
+        results = runner(args, num_processors)
+        with open(summary_file, 'w') as fp:
+            yaml.dump(dict(results), fp, default_flow_style=False)
+        print('segment criticality runtime (sec) =', round(time.time() - start))
+    else:
+        # Define arguments for segment analysis.
+        result = []
+        for segment in range(n_segments):
+            result.append(_segment_criticality('./_wn.pickle', segment,
+                                               link_segments, node_segments,
+                                               nodes_below_pmin, nzd_nodes,
+                                               log_dir, break_start, 
+                                               break_duration, p_min, p_nom)
+                          )
+        with open(summary_file, 'w') as fp:
+            yaml.dump(dict(result), fp, default_flow_style=False)
+        print('segment criticality runtime (sec) =', round(time.time() - start))
+    # Clean up temp files.
+    os.remove('./_wn.pickle')
+    if not save_log:
+        shutil.rmtree(log_dir)
+    # Process the results and save some data and figures.
+    if post_process:
+        process_criticality(_wn, summary_file, output_dir, pop, 
+                            link_segments=link_segments, 
+                            node_segments=node_segments, 
+                            valve_layer=valve_layer)
+
+
 def process_criticality(wn, summary_file, output_dir, pop=None,
-                        save_maps=True, save_csv=True):
+                        save_maps=True, save_csv=True, link_segments=None,
+                        node_segments=None, valve_layer=None):
     """
     Process the results of a criticality analysis and produce some figures
 
@@ -388,10 +553,23 @@ def process_criticality(wn, summary_file, output_dir, pop=None,
             summary_pop[key] = 0
             for node in val.keys():
                 summary_pop[key] += pop[node]
-        elif val == 'NO EFFECTED NODES':
+        elif val == 'NO AFFECTED NODES':
             pass
         elif 'failed:' in val:
-            failed_sim[key] = val
+            failed_sim[key] = val     
+
+    # assign results from the segments to the links
+    if 'segment' in summary_file:
+        link_nodes_affected = {}
+        link_pop = {}
+        for link in link_segments.index:
+            if str(link_segments[link]) in summary_len.index:
+                link_nodes_affected[link] = summary_len[summary_len.index == str(link_segments[link])][0]
+                link_pop[link] = summary_pop[summary_pop.index == str(link_segments[link])][0]
+            else:
+                link_nodes_affected[link] = 0
+                link_pop[link] = 0
+            
     # Produce output and save in output dir
     if save_csv:
         csv_summary = pd.DataFrame({"Nodes Impacted": summary_len,
@@ -419,6 +597,25 @@ pressure conditions\nfor each fire demand', ax=ax)
                                        node_size=20, link_width=0,
                                        title='Number of people impacted by low\
  pressure conditions\nfor each fire demand', ax=ax)
+            plt.savefig(os.path.join(output_dir, 'pop_impacted_map.pdf'))
+        if 'segment' in summary_file:
+            fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
+            wntr.graphics.plot_network(wn, link_attribute='length',
+                                       node_size=0, link_cmap=cmap,
+                                       add_colorbar=False, ax=ax)
+            wntr.graphics.plot_network(wn, valve_layer=valve_layer, link_attribute=link_nodes_affected,
+                                       node_size=0, link_width=2,
+                                       title='Number of nodes impacted by low \
+pressure conditions\nfor each segment closure', ax=ax)
+            plt.savefig(os.path.join(output_dir, 'nodes_impacted_map.pdf'))   
+            fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
+            wntr.graphics.plot_network(wn, link_attribute='length',
+                                       node_size=0, link_cmap=cmap,
+                                       add_colorbar=False, ax=ax)
+            wntr.graphics.plot_network(wn, valve_layer=valve_layer, link_attribute=link_pop,
+                                       node_size=0, link_width=2,
+                                       title='Number of people impacted by low\
+ pressure conditions\nfor each segment closure', ax=ax)
             plt.savefig(os.path.join(output_dir, 'pop_impacted_map.pdf'))
         else:
             fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
