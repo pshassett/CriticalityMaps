@@ -33,8 +33,8 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
 
     Parameters
     ----------
-    _wn: wntr WaterNetworkModel object
-        wntr _wn for the water network of interest
+    wn: wntr WaterNetworkModel object
+        wntr wn for the water network of interest
 
     output_dir: str/path-like object, optional
         path to the directory to save the results of the analysis.
@@ -102,7 +102,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
 
     pop: dict or pandas DataFrame, optional
         population estimate at each node. Used for post processing. If
-        undefined, defaults to the result of wntr.metrics.population(_wn).
+        undefined, defaults to the result of wntr.metrics.population(wn).
 
         Defaults to None.
 
@@ -197,8 +197,8 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
 
     Parameters
     ----------
-    _wn: wntr WaterNetworkModel object
-        wntr _wn for the water network of interest
+    wn: wntr WaterNetworkModel object
+        wntr wn for the water network of interest
 
     output_dir: str/path-like object, optional
         path to the directory to save the results of the analysis.
@@ -354,8 +354,8 @@ def segment_criticality_analysis(wn, link_segments, node_segments, valve_layer,
 
     Parameters
     ----------
-    _wn: wntr WaterNetworkModel object
-        wntr _wn for the water network of interest
+    wn: wntr WaterNetworkModel object
+        wntr wn for the water network of interest
     
     link_segments: Pandas series
         results of valve_segments algorithm, listing links and their segment
