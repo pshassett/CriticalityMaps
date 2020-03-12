@@ -12,6 +12,10 @@ install:
     - pip install coverage
 
 script:
+    - git clone https://github.com/usepa/wntr.git
+    - cd wntr
+    - python setup.py install
+    - cd ..
     - nosetests -v --nologcapture --with-coverage --cover-package=criticalityMaps
 
 after_success:
