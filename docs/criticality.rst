@@ -27,7 +27,7 @@ is measured. This process is then repeated for all pipes of interest
 in the system. Key parameters to customize this analysis are:
 
 * duration of the pipe closure (defaults to 48 hr)
-* diameter tresholds of pipes that will have pipe closures applied (defaults to all pipes greater than 12in in diameter)
+* diameter thresholds of pipes that will have pipe closures applied (defaults to all pipes greater than 12in in diameter)
 
 See :func:`.pipe_criticality_analysis` in the api documentation for more details on
 the customization options.
@@ -36,14 +36,15 @@ Segment Criticality
 ^^^^^^^^^^^^^^^^
 Segment criticality analysis provides insight on where the most critical 
 segments of the system are. Segments are defined as groups of pipes that are
-connected within the same set of valves. In order to close one pipe in a segment,
-all the pipes in the segment must be closed. To determine the criticality of a 
-single segment, all of the pipes are closed during a simulation and the impact 
-on surrounding customers is measured. This process is then repeated for all 
-segments of interest in the system. Key parameters to customize this analysis are:
+connected within the same set of valves. In order to close one pipe in a 
+segment, all the pipes in the segment must be closed. To determine the 
+criticality of a single segment, all of the pipes in a segment are closed 
+during a simulation and the impact on surrounding customers is measured. 
+This process is then repeated for all segments of interest in the system. 
+Key parameters to customize this analysis are:
 
 * duration of the segment closure (defaults to 48 hr)
-* diameter tresholds of pipes that will have pipe closures applied (defaults to all pipes greater than 12in in diameter)
+* diameter thresholds of pipes that will have pipe closures applied (defaults to all pipes greater than 12in in diameter)
 
 See :func:`.segment_criticality_analysis` in the api documentation for more details on
 the customization options.
