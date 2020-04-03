@@ -61,6 +61,28 @@ class TestCriticality(unittest.TestCase):
         except Exception as e:
             raise e
 
+    def test_segment_criticality(self):
+        try:
+            G = self.wn.get_graph()
+            valve_layer = self.wntr.network.generate_valve_layer(self.wn, n=2, seed=123)
+            node_segments, link_segments, seg_sizes = self.wntr.metrics.valve_segments(G, valve_layer)
+            
+            # Run segment criticality with minimal output.
+            self.cm.segment_criticality_analysis(self.wn, link_segments, 
+                                                 node_segments, valve_layer,
+                                                 post_process=False,
+                                                 output_dir=testdir,
+                                                 summary_file="segment_criticality_test.yml"
+                                                 )
+            # Open the output and the benchmark yml files.
+            with open(os.path.join(datadir, "segment_criticality_benchmark.yml"), 'r') as fp:
+                bench = yaml.load(fp, Loader=yaml.BaseLoader)
+            with open(os.path.join(testdir, "segment_criticality_test.yml"), 'r') as fp:
+                test = yaml.load(fp, Loader=yaml.BaseLoader)
+            # Assert the results are equal
+            self.assertDictEqual(bench, test)
+        except Exception as e:
+            raise e
 
 if __name__ == '__main__':
     unittest.main()
