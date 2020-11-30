@@ -18,7 +18,7 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
         _wn = pickle.load(fp)
     # Set the simulation characteristics.
     for name, node in _wn.nodes():
-        node.nominal_pressure = p_nom
+        node.required_pressure = p_nom
     _wn.options.time.duration = (start + fire_duration)
     # Add the fire flow pattern and demand to the fire node
     fire_flow_pattern = wntr.network.elements.Pattern.binary_pattern(
@@ -36,7 +36,8 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
     unique_results = {}
     try:
         # Run fire simulation.
-        fire_sim = wntr.sim.WNTRSimulator(_wn, mode='PDD')
+        _wn.options.hydraulic.demand_model = 'PDD'
+        fire_sim = wntr.sim.WNTRSimulator(_wn)
         results = fire_sim.run_sim(solver_options={'MAXITER': 500})
         # Get pressure at nzd nodes that fall below p_min.
         temp = results.node['pressure'].loc[_wn.options.time.duration - 3600,
@@ -70,7 +71,7 @@ def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
         _wn = pickle.load(fp)
     # Set the simulation characteristics.
     for name, node in _wn.nodes():
-        node.nominal_pressure = p_nom
+        node.required_pressure = p_nom
     _wn.options.time.duration = (start + break_duration)
 
     try:
@@ -82,7 +83,8 @@ def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
         cond = wntr.network.controls.SimTimeCondition(_wn, '=', start)
         ctrl = wntr.network.controls.Control(cond, act)
         _wn.add_control('close pipe ' + pipe_name, ctrl)
-        pipe_sim = wntr.sim.WNTRSimulator(_wn, mode='PDD')
+        _wn.options.hydraulic.demand_model = 'PDD'
+        pipe_sim = wntr.sim.WNTRSimulator(_wn)
         results = pipe_sim.run_sim(solver_options={'MAXITER': 500})
 
         # Get pressure at nzd nodes that fall below p_min.
@@ -129,7 +131,7 @@ def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
       
     # Set the simulation characteristics.
     for name, node in _wn.nodes():
-        node.nominal_pressure = p_nom
+        node.required_pressure = p_nom
     
     _wn.options.time.duration = start + break_duration
     
@@ -172,8 +174,9 @@ def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
                     _wn.add_control('close pipe ' + node_pipe, ctrl)
                     # ADDED CHECK
 #                    print(_wn.get_control('close pipe ' + node_pipe))
-        
-        pipe_sim = wntr.sim.WNTRSimulator(_wn, mode='PDD')
+
+        _wn.options.hydraulic.demand_model = 'PDD'
+        pipe_sim = wntr.sim.WNTRSimulator(_wn)
         results = pipe_sim.run_sim(solver_options={'MAXITER': 500})
     
         # Get pressure at nzd nodes that fall below p_min.

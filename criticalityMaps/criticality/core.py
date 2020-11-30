@@ -641,7 +641,7 @@ pressure conditions\nfor each pipe closure', ax=ax)
 
 def _set_PDD_params(_wn, pnom, pmin):
     for name, node in _wn.nodes():
-        node.nominal_pressure = pnom
+        node.required_pressure = pnom
         node.minimum_pressure = pmin
 
 
@@ -658,7 +658,8 @@ def _get_nzd_nodes(_wn):
 def _get_lowP_nodes(_wn, pmin, nzd_nodes):
     nodes_below_pmin = {}
     # Original simulation
-    sim = wntr.sim.WNTRSimulator(_wn, mode='PDD')
+    _wn.options.hydraulic.demand_model = 'PDD'
+    sim = wntr.sim.WNTRSimulator(_wn)
     results = sim.run_sim()
     nzd_pressure = results.node['pressure'].loc[:, nzd_nodes]
     below_pmin = nzd_pressure[nzd_pressure < pmin].notna()
