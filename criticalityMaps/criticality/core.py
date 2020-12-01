@@ -18,7 +18,7 @@ import yaml
 import numpy as np
 import wntr
 from .mp_queue_tools import runner
-from .criticality_functions import _fire_criticality, _pipe_criticality, _segment_criticality
+from .criticality_functions import _fire_criticality, _pipe_criticality, _segment_criticality, use_EpanetSimulator
 
 
 def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
@@ -598,7 +598,7 @@ pressure conditions\nfor each fire demand', ax=ax)
                                        title='Number of people impacted by low\
  pressure conditions\nfor each fire demand', ax=ax)
             plt.savefig(os.path.join(output_dir, 'pop_impacted_map.pdf'))
-        if 'segment' in summary_file:
+        elif 'segment' in summary_file:
             fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
             wntr.graphics.plot_network(wn, link_attribute='length',
                                        node_size=0, link_cmap=cmap,
@@ -617,7 +617,7 @@ pressure conditions\nfor each segment closure', ax=ax)
                                        title='Number of people impacted by low\
  pressure conditions\nfor each segment closure', ax=ax)
             plt.savefig(os.path.join(output_dir, 'pop_impacted_map.pdf'))
-        else:
+        elif 'pipe' in summary_file:
             fig, ax = plt.subplots(1, 1, figsize=(fig_x, fig_y))
             wntr.graphics.plot_network(wn, link_attribute='length',
                                        node_size=0, link_cmap=cmap,
@@ -639,11 +639,9 @@ pressure conditions\nfor each pipe closure', ax=ax)
             plt.savefig(os.path.join(output_dir, 'pop_impacted_map.pdf'))
 
 
-def _set_PDD_params(_wn, preq, pmin):
-    for name, node in _wn.nodes():
-        node.required_pressure = preq
-        node.minimum_pressure = pmin
-
+def _set_PDD_params(_wn, pnom, pmin):
+    _wn.options.hydraulic.required_pressure = pnom
+    _wn.options.hydraulic.minimum_pressure = pmin
 
 def _get_nzd_nodes(_wn):
     nzd_nodes = []
@@ -659,7 +657,11 @@ def _get_lowP_nodes(_wn, pmin, nzd_nodes):
     nodes_below_pmin = {}
     # Original simulation
     _wn.options.hydraulic.demand_model = 'PDD'
-    sim = wntr.sim.WNTRSimulator(_wn)
+
+    if use_EpanetSimulator:
+        sim = wntr.sim.EpanetSimulator(_wn)
+    else:
+        sim = wntr.sim.WNTRSimulator(_wn)
     results = sim.run_sim()
     nzd_pressure = results.node['pressure'].loc[:, nzd_nodes]
     below_pmin = nzd_pressure[nzd_pressure < pmin].notna()
