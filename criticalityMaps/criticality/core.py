@@ -639,8 +639,8 @@ pressure conditions\nfor each pipe closure', ax=ax)
             plt.savefig(os.path.join(output_dir, 'pop_impacted_map.pdf'))
 
 
-def _set_PDD_params(_wn, pnom, pmin):
-    _wn.options.hydraulic.required_pressure = pnom
+def _set_PDD_params(_wn, preq, pmin):
+    _wn.options.hydraulic.required_pressure = preq
     _wn.options.hydraulic.minimum_pressure = pmin
 
 def _get_nzd_nodes(_wn):
