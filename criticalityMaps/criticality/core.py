@@ -24,7 +24,7 @@ from .criticality_functions import _fire_criticality, _pipe_criticality, _segmen
 def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
                               fire_start=86400, fire_duration=7200,
                               min_pipe_diam=0.1524, max_pipe_diam=0.2032,
-                              p_nom=17.58, p_min=14.06, save_log=False,
+                              p_req=17.58, p_min=14.06, save_log=False,
                               summary_file='fire_criticality_summary.yml',
                               post_process=True, pop=None, multiprocess=False,
                               num_processors=None):
@@ -66,8 +66,8 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
 
         Defaults to 0.2032 m (8in).
 
-    p_nom: float, optional
-        nominal pressure for PDD (kPa). The minimun pressure to still recieve
+    p_req: float, optional
+        required pressure for PDD (kPa). The minimun pressure to still recieve
         full expected demand.
 
         Defaults to 17.58 kPa (25psi).
@@ -123,7 +123,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
     # Start the timer.
     start = time.time()
     # Set the PDD simulation characteristics.
-    _set_PDD_params(_wn, p_nom, p_min)
+    _set_PDD_params(_wn, p_req, p_min)
     # Duration can be set in _fire_criticality instead of here
     # _wn.options.time.duration = fire_start + fire_duration
     # Pickle-serialize the _wn for reuse.
@@ -155,7 +155,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
     if multiprocess:
         # Define arguments for fire analysis.
         args = [(_fire_criticality, ('./_wn.pickle', fire_start, fire_duration,
-                                     p_min, p_nom, node, fire_demand,
+                                     p_min, p_req, node, fire_demand,
                                      nzd_nodes, nodes_below_pmin, log_dir))
                 for node in fire_nodes]
         # Execute in a mp fashion.
@@ -169,7 +169,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
         result = []
         for node in fire_nodes:
             result.append(_fire_criticality('./_wn.pickle', fire_start,
-                                            fire_duration, p_min, p_nom, node,
+                                            fire_duration, p_min, p_req, node,
                                             fire_demand, nzd_nodes,
                                             nodes_below_pmin, log_dir)
                           )
@@ -187,7 +187,7 @@ def fire_criticality_analysis(wn, output_dir="./", fire_demand=0.946,
 
 def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
                               break_duration=172800, min_pipe_diam=0.3048,
-                              max_pipe_diam=None, p_nom=17.58, p_min=14.06,
+                              max_pipe_diam=None, p_req=17.58, p_min=14.06,
                               save_log=False,
                               summary_file='pipe_criticality_summary.yml',
                               post_process=True, pop=None, multiprocess=False,
@@ -225,8 +225,8 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
 
         Defaults to None.
 
-    p_nom: float, optional
-        nominal pressure for PDD (kPa). The minimun pressure to still recieve
+    p_req: float, optional
+        required pressure for PDD (kPa). The minimun pressure to still recieve
         full expected demand.
 
         Defaults to 17.58 kPa (25psi).
@@ -282,7 +282,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
     # Start the timer.
     start = time.time()
     # Set the PDD simulation characteristics.
-    _set_PDD_params(_wn, p_nom, p_min)
+    _set_PDD_params(_wn, p_req, p_min)
     _wn.options.time.duration = break_start + break_duration
     # Pickle-serialize the _wn for reuse.
     with open('./_wn.pickle', 'wb') as fp:
@@ -311,7 +311,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
     if multiprocess:
         # Define arguments for pipe analysis.
         args = [(_pipe_criticality, ('./_wn.pickle', break_start,
-                                     break_duration, p_min, p_nom, pipe,
+                                     break_duration, p_min, p_req, pipe,
                                      nzd_nodes, nodes_below_pmin, log_dir))
                 for pipe in critical_pipes]
         # Execute in a mp fashion.
@@ -325,7 +325,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
         result = []
         for pipe in critical_pipes:
             result.append(_pipe_criticality('./_wn.pickle', break_start,
-                                            break_duration, p_min, p_nom, pipe,
+                                            break_duration, p_min, p_req, pipe,
                                             nzd_nodes, nodes_below_pmin,
                                             log_dir)
                           )
@@ -344,7 +344,7 @@ def pipe_criticality_analysis(wn, output_dir="./", break_start=86400,
 def segment_criticality_analysis(wn, link_segments, node_segments, valve_layer, 
                                  output_dir="./", break_start=86400, 
                                  break_duration=172800, min_pipe_diam=0.3048, 
-                                 max_pipe_diam=None, p_nom=17.58, p_min=14.06, 
+                                 max_pipe_diam=None, p_req=17.58, p_min=14.06, 
                                  save_log=False,
                                  summary_file='segment_criticality_summary.yml',
                                  post_process=True, pop=None, multiprocess=False,
@@ -391,8 +391,8 @@ def segment_criticality_analysis(wn, link_segments, node_segments, valve_layer,
 
         Defaults to None.
 
-    p_nom: float, optional
-        nominal pressure for PDD (kPa). The minimun pressure to still recieve
+    p_req: float, optional
+        required pressure for PDD (kPa). The minimun pressure to still recieve
         full expected demand.
 
         Defaults to 17.58 kPa (25psi).
@@ -448,7 +448,7 @@ def segment_criticality_analysis(wn, link_segments, node_segments, valve_layer,
     # Start the timer.
     start = time.time()
     # Set the PDD simulation characteristics.
-    _set_PDD_params(_wn, p_nom, p_min)
+    _set_PDD_params(_wn, p_req, p_min)
     _wn.options.time.duration = break_start + break_duration
     # Pickle-serialize the _wn for reuse.
     with open('./_wn.pickle', 'wb') as fp:
@@ -469,7 +469,7 @@ def segment_criticality_analysis(wn, link_segments, node_segments, valve_layer,
                                         link_segments, node_segments,
                                         nodes_below_pmin, nzd_nodes,
                                         log_dir, break_start, break_duration, 
-                                        p_min, p_nom)
+                                        p_min, p_req)
                 )
                 for segment in np.arange(n_segments)]
         # Execute in a mp fashion.
@@ -486,7 +486,7 @@ def segment_criticality_analysis(wn, link_segments, node_segments, valve_layer,
                                                link_segments, node_segments,
                                                nodes_below_pmin, nzd_nodes,
                                                log_dir, break_start, 
-                                               break_duration, p_min, p_nom)
+                                               break_duration, p_min, p_req)
                           )
         with open(summary_file, 'w') as fp:
             yaml.dump(dict(result), fp, default_flow_style=False)
@@ -639,9 +639,9 @@ pressure conditions\nfor each pipe closure', ax=ax)
             plt.savefig(os.path.join(output_dir, 'pop_impacted_map.pdf'))
 
 
-def _set_PDD_params(_wn, pnom, pmin):
+def _set_PDD_params(_wn, preq, pmin):
     for name, node in _wn.nodes():
-        node.nominal_pressure = pnom
+        node.required_pressure = preq
         node.minimum_pressure = pmin
 
 
@@ -658,7 +658,8 @@ def _get_nzd_nodes(_wn):
 def _get_lowP_nodes(_wn, pmin, nzd_nodes):
     nodes_below_pmin = {}
     # Original simulation
-    sim = wntr.sim.WNTRSimulator(_wn, mode='PDD')
+    _wn.options.hydraulic.demand_model = 'PDD'
+    sim = wntr.sim.WNTRSimulator(_wn)
     results = sim.run_sim()
     nzd_pressure = results.node['pressure'].loc[:, nzd_nodes]
     below_pmin = nzd_pressure[nzd_pressure < pmin].notna()

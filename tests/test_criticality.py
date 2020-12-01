@@ -38,8 +38,18 @@ class TestCriticality(unittest.TestCase):
             # Open the output and the benchmark yml files.
             with open(os.path.join(datadir, "pipe_criticality_benchmark.yml"), 'r') as fp:
                 bench = yaml.load(fp, Loader=yaml.BaseLoader)
+            for fire in bench.keys():
+                if isinstance(bench[fire], dict):
+                    for node, p in bench[fire].items():
+                        p_float = round(float(p), 1)
+                        bench[fire][node] = p_float                
             with open(os.path.join(testdir, "pipe_criticality_test.yml"), 'r') as fp:
                 test = yaml.load(fp, Loader=yaml.BaseLoader)
+            for fire in test.keys():
+                if isinstance(test[fire], dict):
+                    for node, p in test[fire].items():
+                        p_float = round(float(p), 1)
+                        test[fire][node] = p_float                
             # Assert the results are equal
             self.assertDictEqual(bench, test)
         except Exception as e:
@@ -54,8 +64,18 @@ class TestCriticality(unittest.TestCase):
             # Open the output and the benchmark yml files.
             with open(os.path.join(datadir, "fire_criticality_benchmark.yml"), 'r') as fp:
                 bench = yaml.load(fp, Loader=yaml.BaseLoader)
+            for pipe in bench.keys():
+                if isinstance(bench[pipe], dict):
+                    for node, p in bench[pipe].items():
+                        p_float = round(float(p), 1)
+                        bench[pipe][node] = p_float
             with open(os.path.join(testdir, "fire_criticality_test.yml"), 'r') as fp:
                 test = yaml.load(fp, Loader=yaml.BaseLoader)
+            for pipe in test.keys():
+                if isinstance(test[pipe], dict):
+                    for node, p in test[pipe].items():
+                        p_float = round(float(p), 1)
+                        test[pipe][node] = p_float
             # Assert the results are equal
             self.assertDictEqual(bench, test)
         except Exception as e:
@@ -77,8 +97,18 @@ class TestCriticality(unittest.TestCase):
             # Open the output and the benchmark yml files.
             with open(os.path.join(datadir, "segment_criticality_benchmark.yml"), 'r') as fp:
                 bench = yaml.load(fp, Loader=yaml.BaseLoader)
+            for segment in bench.keys():
+                if isinstance(bench[segment], dict):
+                    for node, p in bench[segment].items():
+                        p_float = round(float(p), 1)
+                        bench[segment][node] = p_float
             with open(os.path.join(testdir, "segment_criticality_test.yml"), 'r') as fp:
                 test = yaml.load(fp, Loader=yaml.BaseLoader)
+            for segment in test.keys():
+                if isinstance(test[segment], dict):
+                    for node, p in test[segment].items():
+                        p_float = round(float(p), 1)
+                        test[segment][node] = p_float
             # Assert the results are equal
             self.assertDictEqual(bench, test)
         except Exception as e:
@@ -86,3 +116,7 @@ class TestCriticality(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+#    with open(os.path.join(datadir, "fire_criticality_benchmark.yml"), 'r') as fp:
+#        bench = yaml.load(fp, Loader=yaml.BaseLoader)    
+#    with open(os.path.join(testdir, "segment_criticality_test.yml"), 'r') as fp:
+#        test = yaml.load(fp, Loader=yaml.BaseLoader)

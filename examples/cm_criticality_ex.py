@@ -11,7 +11,7 @@ import criticalityMaps as cm
 ''' Gather WNTR network from input file '''
 inp_file = 'Net3.inp' 
 wn = wntr.network.WaterNetworkModel(inp_file)
-G = _wn.get_graph()
+G = wn.get_graph()
 
 
 # Pick criticality type, whether to post-process, whether to use multiprocessing

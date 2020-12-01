@@ -10,14 +10,14 @@ longlat_points = {'10': (-100.125, 40.125),
 wn = wntr.morph.convert_node_coordinates_to_longlat(wn, longlat_points)
 
 # Fire criticality example.
-cm.criticality.fire_criticality_analysis(wn, multiprocess=False,
-                                         output_dir='./fire_criticality'
-                                         )
-cm.mapping.make_criticality_map(wn, './fire_criticality/fire_criticality_summary.yml')
+#cm.criticality.fire_criticality_analysis(wn, multiprocess=False,
+#                                         output_dir='./fire_criticality'
+#                                         )
+#cm.mapping.make_criticality_map(wn, './fire_criticality/fire_criticality_summary.yml')
 
 # Pipe criticality example.
-cm.criticality.pipe_criticality_analysis(wn, multiprocess=False,
-                                         output_dir='./pipe_criticality')
+#cm.criticality.pipe_criticality_analysis(wn, multiprocess=False,
+#                                         output_dir='./pipe_criticality')
 cm.mapping.make_criticality_map(wn,
                                 './pipe_criticality/pipe_criticality_summary.yml')
 
