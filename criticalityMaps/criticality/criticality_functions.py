@@ -18,9 +18,7 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
     with open(wn_pickle, 'rb') as fp:
         _wn = pickle.load(fp)
     # Set the simulation characteristics.
-    for name, node in _wn.nodes():
-        node.required_pressure = p_nom
-        
+    _wn.options.hydraulic.required_pressure = p_nom
     _wn.options.time.duration = (start + fire_duration)
     
     # Add the fire flow pattern and demand to the fire node
@@ -77,8 +75,7 @@ def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
     with open(wn_pickle, 'rb') as fp:
         _wn = pickle.load(fp)
     # Set the simulation characteristics.
-    for name, node in _wn.nodes():
-        node.required_pressure = p_nom
+    _wn.options.hydraulic.required_pressure = p_nom
     _wn.options.time.duration = (start + break_duration)
 
     try:
@@ -142,9 +139,7 @@ def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
         _wn = pickle.load(fp)
       
     # Set the simulation characteristics.
-    for name, node in _wn.nodes():
-        node.required_pressure = p_nom
-    
+    _wn.options.hydraulic.required_pressure = p_nom
     _wn.options.time.duration = start + break_duration
     
     # Gather start and end nodes for all pipes

@@ -640,10 +640,8 @@ pressure conditions\nfor each pipe closure', ax=ax)
 
 
 def _set_PDD_params(_wn, pnom, pmin):
-    for name, node in _wn.nodes():
-        node.required_pressure = pnom
-        node.minimum_pressure = pmin
-
+    _wn.options.hydraulic.required_pressure = pnom
+    _wn.options.hydraulic.minimum_pressure = pmin
 
 def _get_nzd_nodes(_wn):
     nzd_nodes = []
