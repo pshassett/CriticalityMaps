@@ -11,14 +11,14 @@ import wntr
 
 use_EpanetSimulator = False
 
-def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
+def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_req, fire_node,
                       fire_dmnd, nzd_nodes, nodes_below_pmin, results_dir):
     # print('~'*20 + 'running fire analysis for node' + fire_node + '~'*20)
     # Reset the wn to original status. Pickle beforehand as needed.
     with open(wn_pickle, 'rb') as fp:
         _wn = pickle.load(fp)
     # Set the simulation characteristics.
-    _wn.options.hydraulic.required_pressure = p_nom
+    _wn.options.hydraulic.required_pressure = p_req
     _wn.options.time.duration = (start + fire_duration)
     
     # Add the fire flow pattern and demand to the fire node
@@ -38,12 +38,14 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
     try:
         # Run fire simulation.
         _wn.options.hydraulic.demand_model = 'PDD'
+
         if use_EpanetSimulator:
             fire_sim = wntr.sim.EpanetSimulator(_wn)
             results = fire_sim.run_sim()
         else:
             fire_sim = wntr.sim.WNTRSimulator(_wn)
             results = fire_sim.run_sim(solver_options={'MAXITER': 500})
+           
         # Get pressure at nzd nodes that fall below p_min.
         temp = results.node['pressure'].loc[_wn.options.time.duration - 3600,
                                             nzd_nodes]
@@ -68,14 +70,14 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
         return (fire_node, unique_results)
 
 
-def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
+def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_req,
                       pipe_name, nzd_nodes, nodes_below_pmin, results_dir):
     # print('~'*20 + ' running pipe criticality for pipe' + pipe_name + '~'*20)
     # Reset the _wn to original status. Pickle beforehand as needed.
     with open(wn_pickle, 'rb') as fp:
         _wn = pickle.load(fp)
     # Set the simulation characteristics.
-    _wn.options.hydraulic.required_pressure = p_nom
+    _wn.options.hydraulic.required_pressure = p_req
     _wn.options.time.duration = (start + break_duration)
 
     try:
@@ -130,7 +132,7 @@ def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
 
 def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
                          nodes_below_pmin, nzd_nodes, results_dir, start=86400, 
-                         break_duration=172800, p_min=14.06, p_nom=17.58):
+                         break_duration=172800, p_min=14.06, p_req=17.58):
     # print('~'*20 + ' running segment criticality for segment' + segment + '~'*20)
     # Reset the _wn to original status. Pickle beforehand as needed.
     
@@ -139,7 +141,7 @@ def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
         _wn = pickle.load(fp)
       
     # Set the simulation characteristics.
-    _wn.options.hydraulic.required_pressure = p_nom
+    _wn.options.hydraulic.required_pressure = p_req
     _wn.options.time.duration = start + break_duration
     
     # Gather start and end nodes for all pipes
