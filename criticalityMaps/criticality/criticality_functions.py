@@ -9,17 +9,18 @@ import pickle
 import pandas as pd
 import wntr
 
+use_EpanetSimulator = False
 
-def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
+def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_req, fire_node,
                       fire_dmnd, nzd_nodes, nodes_below_pmin, results_dir):
     # print('~'*20 + 'running fire analysis for node' + fire_node + '~'*20)
     # Reset the wn to original status. Pickle beforehand as needed.
     with open(wn_pickle, 'rb') as fp:
         _wn = pickle.load(fp)
     # Set the simulation characteristics.
-    for name, node in _wn.nodes():
-        node.nominal_pressure = p_nom
+    _wn.options.hydraulic.required_pressure = p_req
     _wn.options.time.duration = (start + fire_duration)
+    
     # Add the fire flow pattern and demand to the fire node
     fire_flow_pattern = wntr.network.elements.Pattern.binary_pattern(
             'fire_flow',
@@ -36,8 +37,15 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
     unique_results = {}
     try:
         # Run fire simulation.
-        fire_sim = wntr.sim.WNTRSimulator(_wn, mode='PDD')
-        results = fire_sim.run_sim(solver_options={'MAXITER': 500})
+        _wn.options.hydraulic.demand_model = 'PDD'
+
+        if use_EpanetSimulator:
+            fire_sim = wntr.sim.EpanetSimulator(_wn)
+            results = fire_sim.run_sim()
+        else:
+            fire_sim = wntr.sim.WNTRSimulator(_wn)
+            results = fire_sim.run_sim(solver_options={'MAXITER': 500})
+           
         # Get pressure at nzd nodes that fall below p_min.
         temp = results.node['pressure'].loc[_wn.options.time.duration - 3600,
                                             nzd_nodes]
@@ -46,7 +54,7 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
         temp = temp.round(decimals=5)
         # Remove nodes that are below pressure threshold in base case.
         unique_results = temp[set(temp.index)
-                              - set(nodes_below_pmin[_wn.sim_time - 3600])]
+                              - set(nodes_below_pmin[_wn.options.time.duration - 3600])]
         unique_results = unique_results.to_dict()
 
     except Exception as e:
@@ -62,15 +70,14 @@ def _fire_criticality(wn_pickle, start, fire_duration, p_min, p_nom, fire_node,
         return (fire_node, unique_results)
 
 
-def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
+def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_req,
                       pipe_name, nzd_nodes, nodes_below_pmin, results_dir):
     # print('~'*20 + ' running pipe criticality for pipe' + pipe_name + '~'*20)
     # Reset the _wn to original status. Pickle beforehand as needed.
     with open(wn_pickle, 'rb') as fp:
         _wn = pickle.load(fp)
     # Set the simulation characteristics.
-    for name, node in _wn.nodes():
-        node.nominal_pressure = p_nom
+    _wn.options.hydraulic.required_pressure = p_req
     _wn.options.time.duration = (start + break_duration)
 
     try:
@@ -79,11 +86,17 @@ def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
         act = wntr.network.controls.ControlAction(pipe,
                                                   'status',
                                                   wntr.network.LinkStatus.Closed)
-        cond = wntr.network.controls.SimTimeCondition(_wn, '=', start)
+        cond = wntr.network.controls.SimTimeCondition(_wn, 'Above', start)
         ctrl = wntr.network.controls.Control(cond, act)
         _wn.add_control('close pipe ' + pipe_name, ctrl)
-        pipe_sim = wntr.sim.WNTRSimulator(_wn, mode='PDD')
-        results = pipe_sim.run_sim(solver_options={'MAXITER': 500})
+        
+        _wn.options.hydraulic.demand_model = 'PDD'
+        if use_EpanetSimulator:
+            pipe_sim = wntr.sim.EpanetSimulator(_wn)
+            results = pipe_sim.run_sim()
+        else:
+            pipe_sim = wntr.sim.WNTRSimulator(_wn)
+            results = pipe_sim.run_sim(solver_options={'MAXITER': 500})
 
         # Get pressure at nzd nodes that fall below p_min.
         temp = results.node['pressure'].loc[start:
@@ -119,7 +132,7 @@ def _pipe_criticality(wn_pickle, start, break_duration, p_min, p_nom,
 
 def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
                          nodes_below_pmin, nzd_nodes, results_dir, start=86400, 
-                         break_duration=172800, p_min=14.06, p_nom=17.58):
+                         break_duration=172800, p_min=14.06, p_req=17.58):
     # print('~'*20 + ' running segment criticality for segment' + segment + '~'*20)
     # Reset the _wn to original status. Pickle beforehand as needed.
     
@@ -128,9 +141,7 @@ def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
         _wn = pickle.load(fp)
       
     # Set the simulation characteristics.
-    for name, node in _wn.nodes():
-        node.nominal_pressure = p_nom
-    
+    _wn.options.hydraulic.required_pressure = p_req
     _wn.options.time.duration = start + break_duration
     
     # Gather start and end nodes for all pipes
@@ -151,7 +162,7 @@ def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
                                                   'status',
                                                   wntr.network.LinkStatus.Closed)
             pipes_list.append(pipe)
-            cond = wntr.network.controls.SimTimeCondition(_wn, '=', start)
+            cond = wntr.network.controls.SimTimeCondition(_wn, 'Above', start)
             ctrl = wntr.network.controls.Control(cond, act)
             _wn.add_control('close pipe ' + pipe, ctrl)
             # ADDED CHECK
@@ -167,14 +178,19 @@ def _segment_criticality(wn_pickle, segment, link_segments, node_segments,
                                                               'status',
                                                               wntr.network.LinkStatus.Closed)
                     pipes_list.append(node_pipe)
-                    cond = wntr.network.controls.SimTimeCondition(_wn, '=', start)
+                    cond = wntr.network.controls.SimTimeCondition(_wn, 'Above', start)
                     ctrl = wntr.network.controls.Control(cond, act)
                     _wn.add_control('close pipe ' + node_pipe, ctrl)
                     # ADDED CHECK
 #                    print(_wn.get_control('close pipe ' + node_pipe))
-        
-        pipe_sim = wntr.sim.WNTRSimulator(_wn, mode='PDD')
-        results = pipe_sim.run_sim(solver_options={'MAXITER': 500})
+
+        _wn.options.hydraulic.demand_model = 'PDD'
+        if use_EpanetSimulator:
+            pipe_sim = wntr.sim.EpanetSimulator(_wn)
+            results = pipe_sim.run_sim()
+        else:
+            pipe_sim = wntr.sim.WNTRSimulator(_wn)
+            results = pipe_sim.run_sim(solver_options={'MAXITER': 500})
     
         # Get pressure at nzd nodes that fall below p_min.
         temp = results.node['pressure'].loc[start:
