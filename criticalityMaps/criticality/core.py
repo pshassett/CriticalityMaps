@@ -531,7 +531,7 @@ def process_criticality(wn, summary_file, output_dir, pop=None,
 
     """
     # Set some local parameters.
-    cmap = wntr.graphics.color.custom_colormap(numcolors=2,
+    cmap = wntr.graphics.color.custom_colormap(N=2,
                                                colors=['gray', 'gray'],
                                                name='custom')
     fig_x = 6
